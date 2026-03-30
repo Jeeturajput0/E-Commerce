@@ -15,6 +15,7 @@ const DashboardLayout = ({ title, links, role, headerContent = null }) => {
   const masterLinks = links.filter((link) => link.group === "master");
   const hasActiveMasterItem = masterLinks.some((link) => location.pathname.startsWith(link.path));
   const MasterIcon = masterLinks[0]?.groupIcon || Boxes;
+  const masterLabel = masterLinks[0]?.groupLabel || "Master data";
 
   const itemClassName = ({ isActive }) =>
     `flex w-full items-center gap-3 rounded-r-2xl px-5 py-2.5 text-[15px] font-semibold transition ${
@@ -58,7 +59,7 @@ const DashboardLayout = ({ title, links, role, headerContent = null }) => {
           >
             <span className="flex items-center gap-3">
               {MasterIcon ? <MasterIcon className="h-4 w-4" /> : null}
-              Master data
+              {masterLabel}
             </span>
             {masterOpen ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </button>

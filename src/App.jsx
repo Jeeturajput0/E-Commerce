@@ -11,6 +11,7 @@ import {
   AdminCustomers,
   AdminDashboardLayout,
   AdminOrders,
+  AdminProfile,
   AdminOverview,
   AdminPayments,
   AdminProducts,
@@ -18,25 +19,33 @@ import {
   AdminSettings,
   AdminSizes,
   AdminVendors,
-} from "./pages/dashboards/AdminDashboard";
+} from "./pages/dashboards/admin";
 import {
   CustomerAddress,
   CustomerCart,
   CustomerDashboardLayout,
   CustomerOrders,
   CustomerOverview,
+  CustomerPayment,
   CustomerProfile,
+  CustomerSettings,
   CustomerWishlist,
-} from "./pages/dashboards/CustomerDashboard";
+} from "./pages/dashboards/customer";
 import {
   VendorAddProduct,
+  VendorAnalytics,
+  VendorCoupons,
   VendorDashboardLayout,
   VendorEarnings,
   VendorOrders,
   VendorOverview,
+  VendorPayouts,
+  VendorProfile,
   VendorProducts,
+  VendorReturns,
   VendorReviews,
-} from "./pages/dashboards/VendorDashboard";
+  VendorSettings,
+} from "./pages/dashboards/vendor";
 import AboutPage from "./pages/store/AboutPage";
 import BlogPage from "./pages/store/BlogPage";
 import CartPage from "./pages/store/CartPage";
@@ -69,6 +78,7 @@ const App = () => {
           <Route path="categories" element={<AdminCategories />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="payments" element={<AdminPayments />} />
+          <Route path="profile" element={<AdminProfile />} />
           <Route path="customers" element={<AdminCustomers />} />
           <Route path="vendors" element={<AdminVendors />} />
           <Route path="reviews" element={<AdminReviews />} />
@@ -86,8 +96,14 @@ const App = () => {
           <Route path="products" element={<VendorProducts />} />
           <Route path="add-product" element={<VendorAddProduct />} />
           <Route path="orders" element={<VendorOrders />} />
+          <Route path="returns" element={<VendorReturns />} />
           <Route path="earnings" element={<VendorEarnings />} />
+          <Route path="profile" element={<VendorProfile />} />
+          <Route path="payouts" element={<VendorPayouts />} />
           <Route path="reviews" element={<VendorReviews />} />
+          <Route path="analytics" element={<VendorAnalytics />} />
+          <Route path="coupons" element={<VendorCoupons />} />
+          <Route path="settings" element={<VendorSettings />} />
           <Route path="*" element={<Navigate to="/vendor/dashboard" replace />} />
         </Route>
 
@@ -96,8 +112,10 @@ const App = () => {
           <Route path="orders" element={<CustomerOrders />} />
           <Route path="wishlist" element={<CustomerWishlist />} />
           <Route path="cart" element={<CustomerCart />} />
-          <Route path="profile" element={<CustomerProfile />} />
           <Route path="address" element={<CustomerAddress />} />
+          <Route path="payment" element={<CustomerPayment />} />
+          <Route path="profile" element={<CustomerProfile />} />
+          <Route path="settings" element={<CustomerSettings />} />
           <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
         </Route>
 

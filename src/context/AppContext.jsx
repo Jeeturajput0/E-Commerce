@@ -78,6 +78,21 @@ export const AppProvider = ({ children }) => {
     setTheme((prev) => (prev === "light" ? "dark" : "light"));
   };
 
+  const updateCurrentUserProfile = (payload) => {
+    if (!currentUser?.id) return;
+    setUsers((prev) =>
+      prev.map((user) =>
+        user.id === currentUser.id ? { ...user, ...payload } : user
+      )
+    );
+    addToast("Profile updated");
+  };
+
+  const logout = () => {
+    setActiveRole("customer");
+    addToast("Logged out", "warning");
+  };
+
   const addProduct = (payload) => {
     const nextId =
       products.length > 0 ? Math.max(...products.map((product) => product.id)) + 1 : 1;
@@ -244,6 +259,8 @@ export const AppProvider = ({ children }) => {
     activeRole,
     setRole,
     currentUser,
+    updateCurrentUserProfile,
+    logout,
     toasts,
     addToast,
     theme,
