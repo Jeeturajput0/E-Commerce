@@ -1,9 +1,11 @@
 import {
   BadgeDollarSign,
   Bell,
+  ChevronDown,
   ChartColumnBig,
   ClipboardCheck,
   LayoutDashboard,
+  LogOut,
   MessageSquareMore,
   Moon,
   Package,
@@ -14,6 +16,7 @@ import {
   ShoppingCart,
   Sun,
   TicketPercent,
+  UserCircle2,
   Wallet,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -1009,7 +1012,6 @@ export const VendorSettings = () => {
     </div>
   );
 };
-
 
 
 

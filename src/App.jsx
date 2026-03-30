@@ -19,7 +19,7 @@ import {
   AdminSettings,
   AdminSizes,
   AdminVendors,
-} from "./pages/dashboards/admin";
+} from "./pages/dashboards/AdminDashboard";
 import {
   CustomerAddress,
   CustomerCart,
@@ -30,7 +30,7 @@ import {
   CustomerProfile,
   CustomerSettings,
   CustomerWishlist,
-} from "./pages/dashboards/customer";
+} from "./pages/dashboards/CustomerDashboard";
 import {
   VendorAddProduct,
   VendorAnalytics,
@@ -45,7 +45,7 @@ import {
   VendorReturns,
   VendorReviews,
   VendorSettings,
-} from "./pages/dashboards/vendor";
+} from "./pages/dashboards/VendorDashboard";
 import AboutPage from "./pages/store/AboutPage";
 import BlogPage from "./pages/store/BlogPage";
 import CartPage from "./pages/store/CartPage";
