@@ -28,7 +28,7 @@ export default function AdminLayout() {
     const [mobileMasterDataOpen, setMobileMasterDataOpen] = useState(true);
     const location = useLocation();
     return (<AdminDashboardProvider>
-      <div className="min-h-screen bg-[radial-gradient(circle_at_top,_hsl(var(--primary)/0.18),_transparent_32%),linear-gradient(180deg,hsl(var(--background)),hsl(var(--secondary)))]">
+      <div className="min-h-screen bg-white">
         <div className="flex min-h-screen">
           <motion.div aria-hidden="true" animate={{ width: collapsed ? 92 : 280 }} transition={{ type: "spring", stiffness: 220, damping: 24 }} className="hidden shrink-0 lg:block"/>
           <AdminSidebar collapsed={collapsed} onToggle={() => setCollapsed((current) => !current)}/>
@@ -87,7 +87,7 @@ export default function AdminLayout() {
 
           <div className="flex min-w-0 flex-1 flex-col">
             <AdminNavbar onMobileMenu={() => setMobileOpen(true)}/>
-            <main className="flex-1 px-4 py-6 sm:px-6 lg:px-8">
+            <main className="flex-1 bg-white px-4 py-6 sm:px-6 lg:px-8">
               <AnimatePresence mode="wait">
                 <motion.div key={location.pathname} initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -18 }} transition={{ duration: 0.28, ease: "easeOut" }}>
                   <Outlet />

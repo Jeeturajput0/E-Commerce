@@ -11,7 +11,7 @@ export function AdminNavbar({ onMobileMenu, }) {
     const [profileOpen, setProfileOpen] = useState(false);
     const location = useLocation();
     const currentPage = useMemo(() => adminNavItems.find((item) => (item.end ? location.pathname === item.to : location.pathname.startsWith(item.to))), [location.pathname]);
-    return (<div className="sticky top-0 z-30 border-b border-primary/20 bg-background/80 px-4 py-4 backdrop-blur-2xl sm:px-6 lg:px-8">
+    return (<div className="sticky top-0 z-30 border-b border-slate-200 bg-white px-4 py-4 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex items-center gap-3">
           <button type="button" onClick={onMobileMenu} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/60 bg-card/70 text-foreground lg:hidden">
@@ -64,7 +64,7 @@ export function AdminNavbar({ onMobileMenu, }) {
               </button>
 
               <AnimatePresence>
-                {profileOpen ? (<motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 8 }} exit={{ opacity: 0, y: -10 }} className="absolute right-0 top-full z-40 mt-2 w-60 rounded-3xl border border-primary/20 bg-background/95 p-4 shadow-2xl backdrop-blur-xl">
+                {profileOpen ? (<motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 8 }} exit={{ opacity: 0, y: -10 }} className="absolute right-0 top-full z-40 mt-2 w-60 rounded-3xl border border-slate-200 bg-white p-4 shadow-2xl">
                     <div className="space-y-3">
                       <div>
                         <p className="font-semibold">Tech Haven Admin</p>

@@ -7,12 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 export function AdminCard({ className, ...props }) {
-    return (<Card className={cn("rounded-[1.5rem] border-black/10 bg-white/80 shadow-lg shadow-black/5 backdrop-blur-xl transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl dark:border-white/10 dark:bg-[#111111]/80", className)} {...props}/>);
+    return (<Card className={cn("rounded-[1.5rem] border-slate-200 bg-white shadow-lg shadow-black/5 transition-all duration-300 hover:-translate-y-1 hover:shadow-2xl", className)} {...props}/>);
 }
 export const AdminButton = forwardRef(({ className, ...props }, ref) => (<Button ref={ref} className={cn("rounded-xl shadow-lg shadow-black/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-xl", className)} {...props}/>));
 AdminButton.displayName = "AdminButton";
 export function AdminInput({ className, ...props }) {
-    return (<Input className={cn("h-11 rounded-xl border-border/60 bg-background/70 transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/50", className)} {...props}/>);
+    return (<Input className={cn("h-11 rounded-xl border-slate-200 bg-white transition-all duration-300 focus-visible:ring-2 focus-visible:ring-primary/50", className)} {...props}/>);
 }
 export function StatusBadge({ tone = "default", className, ...props }) {
     const toneClasses = {
@@ -38,7 +38,7 @@ export function SectionTitle({ eyebrow, title, description, action, }) {
 }
 export function AdminModal({ open, onOpenChange, title, description, children, footer, }) {
     return (<Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="overflow-hidden rounded-[1.75rem] border-black/10 bg-background/90 p-0 shadow-2xl backdrop-blur-2xl dark:border-white/10">
+      <DialogContent className="overflow-hidden rounded-[1.75rem] border-slate-200 bg-white p-0 shadow-2xl">
         <motion.div initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} className="p-6">
           <DialogHeader>
             <DialogTitle>{title}</DialogTitle>
