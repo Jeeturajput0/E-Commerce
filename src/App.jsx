@@ -19,7 +19,7 @@ import {
   AdminSettings,
   AdminSizes,
   AdminVendors,
-} from "./features/admin/dashboard/AdminDashboard";
+} from "./features/admin/AdminDashboard";
 import {
   CustomerAddress,
   CustomerCart,
