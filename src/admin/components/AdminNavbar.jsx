@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bell, LayoutDashboard, Menu, Moon, Search, Sun, UserCircle2 } from "lucide-react";
+import { Bell, Menu, Moon, Search, Sun, UserCircle2 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Link, useLocation } from "react-router-dom";
 import { AdminInput, StatusBadge } from "@/admin/components/AdminPrimitives";
@@ -30,12 +30,6 @@ export function AdminNavbar({ onMobileMenu, }) {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link to="/dashboard" className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/60 bg-card/70 text-foreground transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-lg">
-              <motion.div whileHover={{ y: -2 }} transition={{ type: "spring", stiffness: 400 }}>
-                <LayoutDashboard size={18}/>
-              </motion.div>
-            </Link>
-
             <button type="button" onClick={() => setTheme(theme === "dark" ? "light" : "dark")} className="flex h-11 w-11 items-center justify-center rounded-2xl border border-border/60 bg-card/70 text-foreground transition-all hover:-translate-y-0.5 hover:border-primary hover:shadow-lg">
               <motion.div whileHover={{ scale: 1.08, rotate: 12 }}>
                 {theme === "dark" ? <Sun size={18}/> : <Moon size={18}/>}

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, Phone, User, Heart, ShoppingCart, Menu, X, LayoutDashboard } from "lucide-react";
+import { Search, Phone, User, Heart, ShoppingCart, Menu, X } from "lucide-react";
 import { useSyncExternalStore } from "react";
 import { cartStore } from "@/data/cartStore";
 import { motion, AnimatePresence } from "framer-motion";
@@ -60,9 +60,6 @@ export default function Header() {
             <Phone size={16} className="text-primary"/>
             <span>(00) 1234 567891</span>
           </div>
-          <Link to="/dashboard" className="p-2 rounded-lg hover:bg-secondary transition-colors relative" aria-label="Open dashboard" title="Dashboard">
-            <LayoutDashboard size={22} className="text-primary"/>
-          </Link>
           <Link to="/profile" className="p-2 rounded-lg hover:bg-secondary transition-colors" aria-label="Open profile" title="Profile">
             <User size={22} className="text-foreground"/>
           </Link>
@@ -108,9 +105,6 @@ export default function Header() {
                 <input type="text" placeholder="Search..." className="w-full pl-4 pr-10 py-2 rounded-lg border border-border bg-secondary/50 text-sm"/>
                 <Search size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"/>
               </div>
-              <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-md text-sm hover:bg-secondary transition-colors text-primary font-medium">
-                Dashboard
-              </Link>
               <Link to="/profile" onClick={() => setMobileOpen(false)} className="block px-3 py-2 rounded-md text-sm hover:bg-secondary transition-colors">
                 Profile
               </Link>

@@ -6,7 +6,6 @@ import {
   Search,
   ShoppingCart,
   Sun,
-  User,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -19,6 +18,7 @@ const navLinks = [
   { to: "/categories", label: "Categories" },
   { to: "/blog", label: "Blog" },
   { to: "/contact", label: "Contact" },
+  { to: "/auth", label: "Login / Sign Up" },
 ];
 
 const dashboardLinks = [
@@ -85,9 +85,12 @@ const Navbar = () => {
               </span>
             )}
           </Link>
-          <button className="rounded-full p-2 text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">
-            <User className="h-5 w-5" />
-          </button>
+          <Link
+            to="/auth"
+            className="rounded-full border border-secondary-200 px-4 py-2 text-sm font-semibold text-secondary-700 transition hover:bg-slate-100 dark:border-secondary-700 dark:text-secondary-200 dark:hover:bg-slate-800"
+          >
+            Login / Sign Up
+          </Link>
           <button
             onClick={toggleTheme}
             className="rounded-full p-2 text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
@@ -179,6 +182,13 @@ const Navbar = () => {
                 className="rounded-xl border border-secondary-200 px-3 py-2 text-sm dark:border-secondary-700"
               >
                 Cart ({cartCount})
+              </Link>
+              <Link
+                to="/auth"
+                onClick={() => setMobileOpen(false)}
+                className="rounded-xl border border-secondary-200 px-3 py-2 text-sm dark:border-secondary-700"
+              >
+                Login / Sign Up
               </Link>
               <button
                 onClick={toggleTheme}

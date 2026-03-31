@@ -17,7 +17,7 @@ export default function ProductDetails() {
       </div>);
     }
     const related = products.filter(p => p.category === product.category && p.id !== product.id).slice(0, 4);
-    const handleAddToCart = () => {
+    const i = () => {
         for (let i = 0; i < qty; i++)
             cartStore.addToCart(product);
         toast.success(`${qty}x ${product.name} added to cart`);
@@ -62,7 +62,7 @@ export default function ProductDetails() {
               <span className="px-4 font-bold text-foreground">{qty}</span>
               <button onClick={() => setQty(qty + 1)} className="p-3 hover:bg-secondary transition-colors"><Plus size={16}/></button>
             </div>
-            <button onClick={handleAddToCart} disabled={!product.inStock} className="flex w-full flex-1 items-center justify-center gap-2 rounded-lg gradient-primary py-3 text-sm font-heading font-bold text-primary-foreground transition-all hover:shadow-[var(--shadow-glow)] disabled:opacity-40 sm:w-auto">
+            <button onClick={i} disabled={!product.inStock} className="flex w-full flex-1 items-center justify-center gap-2 rounded-lg gradient-primary py-3 text-sm font-heading font-bold text-primary-foreground transition-all hover:shadow-[var(--shadow-glow)] disabled:opacity-40 sm:w-auto">
               <ShoppingCart size={18}/> Add to Cart
             </button>
             <button className="w-full rounded-lg border border-border p-3 transition-colors hover:bg-secondary sm:w-auto">

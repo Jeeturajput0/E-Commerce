@@ -47,6 +47,7 @@ import {
   VendorSettings,
 } from "./pages/dashboards/VendorDashboard";
 import AboutPage from "./pages/store/AboutPage";
+import AuthPage from "./pages/store/AuthPage";
 import BlogPage from "./pages/store/BlogPage";
 import CartPage from "./pages/store/CartPage";
 import CategoriesPage from "./pages/store/CategoriesPage";
@@ -70,6 +71,7 @@ const App = () => {
           <Route path="blog" element={<BlogPage />} />
           <Route path="contact" element={<ContactPage />} />
           <Route path="about" element={<AboutPage />} />
+          <Route path="auth" element={<AuthPage />} />
         </Route>
 
         <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>
