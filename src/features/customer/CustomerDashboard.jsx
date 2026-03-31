@@ -1,0 +1,9 @@
+export { default as CustomerDashboardLayout } from "./components/CustomerDashboardLayout";
+export { default as CustomerOverview } from "./pages/CustomerOverview";
+export { default as CustomerOrders } from "./pages/CustomerOrders";
+export { default as CustomerWishlist } from "./pages/CustomerWishlist";
+export { default as CustomerCart } from "./pages/CustomerCart";
+export { default as CustomerProfile } from "./pages/CustomerProfile";
+export { default as CustomerAddress } from "./pages/CustomerAddress";
+export { default as CustomerPayment } from "./pages/CustomerPayment";
+export { default as CustomerSettings } from "./pages/CustomerSettings";

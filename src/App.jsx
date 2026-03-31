@@ -19,7 +19,7 @@ import {
   AdminSettings,
   AdminSizes,
   AdminVendors,
-} from "./pages/dashboards/AdminDashboard";
+} from "./features/admin/dashboard/AdminDashboard";
 import {
   CustomerAddress,
   CustomerCart,
@@ -30,7 +30,7 @@ import {
   CustomerProfile,
   CustomerSettings,
   CustomerWishlist,
-} from "./pages/dashboards/CustomerDashboard";
+} from "./features/customer/CustomerDashboard";
 import {
   VendorAddProduct,
   VendorAnalytics,
@@ -45,7 +45,7 @@ import {
   VendorReturns,
   VendorReviews,
   VendorSettings,
-} from "./pages/dashboards/VendorDashboard";
+} from "./features/vendor/VendorDashboard";
 import AboutPage from "./pages/store/AboutPage";
 import AuthPage from "./pages/store/AuthPage";
 import BlogPage from "./pages/store/BlogPage";
@@ -128,3 +128,4 @@ const App = () => {
 };
 
 export default App;
+

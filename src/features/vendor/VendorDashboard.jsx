@@ -1,0 +1,13 @@
+export { default as VendorDashboardLayout } from "./components/VendorDashboardLayout";
+export { default as VendorOverview } from "./pages/VendorOverview";
+export { default as VendorProducts } from "./pages/VendorProducts";
+export { default as VendorAddProduct } from "./pages/VendorAddProduct";
+export { default as VendorOrders } from "./pages/VendorOrders";
+export { default as VendorEarnings } from "./pages/VendorEarnings";
+export { default as VendorReviews } from "./pages/VendorReviews";
+export { default as VendorReturns } from "./pages/VendorReturns";
+export { default as VendorPayouts } from "./pages/VendorPayouts";
+export { default as VendorAnalytics } from "./pages/VendorAnalytics";
+export { default as VendorCoupons } from "./pages/VendorCoupons";
+export { default as VendorProfile } from "./pages/VendorProfile";
+export { default as VendorSettings } from "./pages/VendorSettings";
