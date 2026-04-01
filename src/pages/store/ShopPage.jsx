@@ -5,6 +5,7 @@ import LoadingSkeleton from "../../components/common/LoadingSkeleton";
 import PageTransition from "../../components/common/PageTransition";
 import ProductCard from "../../components/store/ProductCard";
 import { useApp } from "../../context/AppContext";
+import { Search } from "lucide-react";
 
 const ShopPage = () => {
   const { products, categories } = useApp();
@@ -51,7 +52,7 @@ const ShopPage = () => {
 
   return (
     <PageTransition className="space-y-8">
-      <div className="flex flex-col justify-between gap-4 rounded-3xl border border-slate-200/70 bg-white/85 p-6 dark:border-slate-700/60 dark:bg-slate-900/75 lg:flex-row lg:items-center">
+      {/* <div className="flex flex-col justify-between gap-4 rounded-3xl border border-slate-200/70 bg-white/85 p-6 dark:border-slate-700/60 dark:bg-slate-900/75 lg:flex-row lg:items-center">
         <div>
           <h1 className="font-display text-3xl font-bold">Shop</h1>
           <p className="text-sm text-slate-600 dark:text-slate-300">
@@ -96,7 +97,76 @@ const ShopPage = () => {
             />
           </div>
         </div>
-      </div>
+      </div> */}
+
+
+<div className="flex flex-col justify-between gap-4 rounded-3xl border border-slate-200/70 bg-white/85 p-6 dark:border-slate-700/60 dark:bg-slate-900/75 lg:flex-row lg:items-center">
+  
+  {/* LEFT */}
+  <div>
+    <h1 className="font-display text-3xl font-bold">Shop</h1>
+    <p className="text-sm text-slate-600 dark:text-slate-300">
+      Discover curated products from approved marketplace vendors.
+    </p>
+  </div>
+
+  {/* RIGHT */}
+  <div className="grid gap-3 sm:grid-cols-4">
+
+    {/* 🔍 SEARCH BAR */}
+    <div className="relative">
+      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+      <input
+        type="text"
+        placeholder="Search products..."
+        className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:border-slate-700 dark:bg-slate-900"
+      />
+    </div>
+
+    {/* CATEGORY */}
+    <select
+      value={category}
+      onChange={(event) => onCategorySelect(event.target.value)}
+      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none dark:border-slate-700 dark:bg-slate-900"
+    >
+      <option>All</option>
+      {categories.map((entry) => (
+        <option key={entry.id} value={entry.name}>
+          {entry.name}
+        </option>
+      ))}
+    </select>
+
+    {/* SORT */}
+    <select
+      value={sortBy}
+      onChange={(event) => setSortBy(event.target.value)}
+      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none dark:border-slate-700 dark:bg-slate-900"
+    >
+      <option value="latest">Latest</option>
+      <option value="rating">Top Rated</option>
+      <option value="price-asc">Price: Low to High</option>
+      <option value="price-desc">Price: High to Low</option>
+    </select>
+
+    {/* PRICE */}
+    <div>
+      <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-300">
+        Max Price: ${price}
+      </p>
+      <input
+        type="range"
+        min="20"
+        max="500"
+        step="5"
+        value={price}
+        onChange={(event) => setPrice(Number(event.target.value))}
+        className="w-full accent-primary-500"
+      />
+    </div>
+
+  </div>
+</div>
 
       {loading ? (
         <LoadingSkeleton />
