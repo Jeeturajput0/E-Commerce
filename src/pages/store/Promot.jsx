@@ -25,7 +25,7 @@ export default function PromoSection() {
   };
 
   return (
-    <section className="py-10 space-y-10">
+    <section className="py-2 space-y-10">
 
       {/* 🔥 GRID BANNERS */}
       <div className="container-custom grid grid-cols-1 gap-6 md:grid-cols-2">

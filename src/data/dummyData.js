@@ -136,6 +136,102 @@ export const products = [
       "https://images.unsplash.com/photo-1511537190424-bbbab87ac5eb?auto=format&fit=crop&w=1200&q=80",
     ],
   },
+  {
+  id: 109,
+  title: "Orion Bluetooth Speaker",
+  price: 99,
+  category: "Electronics",
+  vendorId: 2,
+  rating: 4.6,
+  stock: 38,
+  sold: 260,
+  description:
+    "Portable wireless speaker with deep bass, waterproof build, and 12-hour playtime.",
+  images: [
+    "https://images.unsplash.com/photo-1589003077984-894e133dabab?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?auto=format&fit=crop&w=1200&q=80",
+  ],
+},
+{
+  id: 110,
+  title: "Urban Classic Sunglasses",
+  price: 59,
+  category: "Fashion",
+  vendorId: 3,
+  rating: 4.5,
+  stock: 55,
+  sold: 190,
+  description:
+    "Stylish UV-protected sunglasses with lightweight frame for everyday wear.",
+  images: [
+    "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1509695507497-903c140c43b0?auto=format&fit=crop&w=1200&q=80",
+  ],
+},
+{
+  id: 111,
+  title: "Smart LED Desk Lamp",
+  price: 45,
+  category: "Home Decor",
+  vendorId: 2,
+  rating: 4.4,
+  stock: 60,
+  sold: 175,
+  description:
+    "Adjustable brightness desk lamp with touch control and eye-care lighting mode.",
+  images: [
+    "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1507473885765-e6ed057f782c?auto=format&fit=crop&w=1200&q=80",
+  ],
+},
+{
+  id: 112,
+  title: "PureGlow Face Cleanser",
+  price: 28,
+  category: "Beauty",
+  vendorId: 3,
+  rating: 4.7,
+  stock: 80,
+  sold: 310,
+  description:
+    "Gentle foaming cleanser enriched with natural extracts for fresh and clear skin.",
+  images: [
+    "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1585386959984-a4155224a1b3?auto=format&fit=crop&w=1200&q=80",
+  ],
+},
+{
+  id: 113,
+  title: "ProFit Yoga Mat",
+  price: 35,
+  category: "Sports",
+  vendorId: 2,
+  rating: 4.6,
+  stock: 70,
+  sold: 220,
+  description:
+    "Non-slip eco-friendly yoga mat with extra cushioning for comfort workouts.",
+  images: [
+    "https://images.unsplash.com/photo-1594737625785-c3dcb63c91d4?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1599058917765-a780eda07a3e?auto=format&fit=crop&w=1200&q=80",
+  ],
+},
+{
+  id: 114,
+  title: "Minimalist Wall Clock",
+  price: 39,
+  category: "Home Decor",
+  vendorId: 3,
+  rating: 4.5,
+  stock: 45,
+  sold: 150,
+  description:
+    "Silent sweep wall clock with modern minimalist design for home and office.",
+  images: [
+    "https://images.unsplash.com/photo-1508962914676-134849a727f0?auto=format&fit=crop&w=1200&q=80",
+    "https://images.unsplash.com/photo-1582582621959-48d27397dc69?auto=format&fit=crop&w=1200&q=80",
+  ],
+},
 ];
 
 export const users = [

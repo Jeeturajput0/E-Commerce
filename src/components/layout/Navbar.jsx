@@ -3,11 +3,12 @@ import { Menu, Moon, Search, ShoppingCart, Sun, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
+import CategoriesBar from "../../pages/store/CategoriesBar";
 
 const navLinks = [
   { to: "/", label: "Home" },
   { to: "/shop", label: "Shop" },
-  { to: "/categories", label: "Categories" },
+  // { to: "/categories", label: "Categories" },
   { to: "/blog", label: "Blog" },
 ];
 
@@ -177,6 +178,7 @@ const Navbar = () => {
           </div>
         </motion.div>
       )}
+      <CategoriesBar/>
     </header>
   );
 };
