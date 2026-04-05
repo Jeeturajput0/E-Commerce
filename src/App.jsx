@@ -55,6 +55,9 @@ import ContactPage from "./pages/store/ContactPage";
 import HomePage from "./pages/store/HomePage";
 import ProductDetailsPage from "./pages/store/ProductDetailsPage";
 import ShopPage from "./pages/store/ShopPage";
+import Profile from "./pages/store/Profile";
+import Orders from "./pages/store/Orders";
+import Settings from "./pages/store/Setting";
 
 const App = () => {
   const location = useLocation();
@@ -72,6 +75,10 @@ const App = () => {
           <Route path="contact" element={<ContactPage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="auth" element={<AuthPage />} />
+<Route path="/profile" element={<Profile />} />
+<Route path="/orders" element={<Orders />} />
+<Route path="/settings" element={<Settings />} />
+          
         </Route>
 
         <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>

@@ -7,12 +7,16 @@ import CategorySidebar from "./CategorySidebar";
 const categories = [
   "Electronics",
   "Fashion",
-  "Home Decor",
   "Beauty",
   "Sports",
   "Books",
   "Gadgets",
   "Accessories",
+  "Mobiles",
+  "Laptops",
+  "Footwear",
+  "Toys",
+  "Gaming",
 ];
 
 export default function CategoriesBar() {
@@ -22,7 +26,7 @@ export default function CategoriesBar() {
   return (
     <>
       {/* Top Bar */}
-      <div className="w-full sticky top-[64px] z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-b">
+      <div className=" mx-auto flex w-full max-w-7xl items-center justify-between rounded-[1.75rem] border border-white/70 px-4 py-3 backdrop-blur-xl dark:border-slate-700/70 dark:bg-slate-950/70  bg-white/80 dark:bg-slate-900/80 backdrop-blur border-b">
 
         <div className="container-custom flex justify-center items-center gap-4 py-2">
           

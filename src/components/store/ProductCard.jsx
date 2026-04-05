@@ -12,7 +12,7 @@ const ProductCard = ({ product }) => {
     <motion.article
       whileHover={{ y: -8 }}
       transition={{ type: "spring", stiffness: 220, damping: 18 }}
-      className="group flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/80 shadow-[0_24px_60px_-38px_rgba(15,23,42,0.45)] backdrop-blur-xl transition dark:border-secondary-700/60 dark:bg-secondary-900/70"
+      className="group flex h-110 flex-col overflow-hidden rounded-[1.75rem] border border-white/70 bg-white/80 shadow-[0_24px_60px_-38px_rgba(15,23,42,0.45)] backdrop-blur-xl transition dark:border-secondary-700/60 dark:bg-secondary-900/70"
     >
       <div className="relative overflow-hidden">
         <img
@@ -24,9 +24,11 @@ const ProductCard = ({ product }) => {
           onClick={() => toggleWishlist(product.id)}
           className="absolute right-4 top-4 rounded-full bg-white/90 p-2.5 text-secondary-700 shadow dark:bg-secondary-900/85 dark:text-secondary-200"
         >
-          <Heart className={`h-4 w-4 ${liked ? "fill-current text-rose-500" : ""}`} />
+          <Heart
+            className={`h-4 w-4 ${liked ? "fill-current text-rose-500" : ""}`}
+          />
         </button>
-        <div className="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-primary-900/35 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-primary-900/35 to-transparent" />
       </div>
       <div className="flex flex-1 flex-col gap-4 p-5">
         <div className="flex items-center justify-between gap-3">
@@ -39,7 +41,7 @@ const ProductCard = ({ product }) => {
         </div>
         <Link
           to={`/shop/${product.id}`}
-          className="line-clamp-2 min-h-[3.5rem] font-display text-xl font-semibold leading-snug"
+          className=" font-display text-xl font-semibold leading-snug"
         >
           {product.title}
         </Link>
@@ -48,7 +50,9 @@ const ProductCard = ({ product }) => {
         </p>
         <div className="mt-auto flex items-end justify-between gap-4 pt-4 dark:border-slate-700/70">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Price</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-slate-400">
+              Price
+            </p>
             <span className="text-2xl font-bold">${product.price}</span>
           </div>
           <Button
@@ -56,7 +60,7 @@ const ProductCard = ({ product }) => {
             className="shrink-0 px-4 py-2.5"
             onClick={() => addToCart(product.id)}
           >
-            <ShoppingBag className="h-4 w-4" />
+            <ShoppingBag className="h-2 w-4" />
             Quick Add
           </Button>
         </div>

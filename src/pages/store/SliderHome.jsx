@@ -28,7 +28,7 @@ const slides = [
 
 export default function SliderHome() {
   return (
-   <div className="w-full h-[180px] md:h-[500px]">
+   <div className="w-full h-[300px] md:h-[300]">
 
   <Swiper
     modules={[Autoplay, Pagination]}
@@ -39,10 +39,10 @@ export default function SliderHome() {
     pagination={{ clickable: true }}
     loop
     speed={900}
-    className="w-full h-full rounded-[2rem] overflow-hidden shadow-2xl"
+    className="w-full h-[300px] rounded-[2rem] overflow-hidden shadow-2xl"
   >
     {slides.map((slide, i) => (
-      <SwiperSlide key={i}>
+      <SwiperSlide key={i} className="flex items-center">
         
         <div className="relative w-full h-full group">
 
@@ -54,7 +54,7 @@ export default function SliderHome() {
           />
 
           {/* OVERLAY (thoda light kiya for small height) */}
-          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute inset-0 bg-black/20" />
 
           {/* ✅ TEXT (SMALL HEIGHT OPTIMIZED) */}
           <motion.div
@@ -62,7 +62,7 @@ export default function SliderHome() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="absolute top-1/2 left-4 md:left-20 -translate-y-1/2 text-white z-10"
+            className="absolute top-20 left-4 md:left-20 -translate-y-1/2 text-white z-10"
           >
             {/* SMALL TEXT */}
             <h2 className="text-lg md:text-5xl font-bold">
