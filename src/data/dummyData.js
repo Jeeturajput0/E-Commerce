@@ -200,22 +200,7 @@ export const products = [
     "https://images.unsplash.com/photo-1585386959984-a4155224a1b3?auto=format&fit=crop&w=1200&q=80",
   ],
 },
-{
-  id: 113,
-  title: "ProFit Yoga Mat",
-  price: 35,
-  category: "Sports",
-  vendorId: 2,
-  rating: 4.6,
-  stock: 70,
-  sold: 220,
-  description:
-    "Non-slip eco-friendly yoga mat with extra cushioning for comfort workouts.",
-  images: [
-    "https://images.unsplash.com/photo-1594737625785-c3dcb63c91d4?auto=format&fit=crop&w=1200&q=80",
-    "https://images.unsplash.com/photo-1599058917765-a780eda07a3e?auto=format&fit=crop&w=1200&q=80",
-  ],
-},
+
 {
   id: 114,
   title: "Minimalist Wall Clock",

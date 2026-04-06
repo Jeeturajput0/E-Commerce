@@ -6,7 +6,7 @@ import Navbar from "./Navbar";
 const MainLayout = () => (
   <>
     <Navbar />
-    <main className="mx-auto w-full max-w-7xl px-4 pb-12 pt-8 lg:px-8">
+    <main className="mx-auto w-full max-w-7xl px-4 pb-12 pt-6 lg:px-8 lg:pt-8">
       <Outlet />
     </main>
     <Footer />

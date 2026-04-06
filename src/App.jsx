@@ -11,10 +11,10 @@ import {
   AdminCustomers,
   AdminDashboardLayout,
   AdminOrders,
-  AdminProfile,
   AdminOverview,
   AdminPayments,
   AdminProducts,
+  AdminProfile,
   AdminReviews,
   AdminSettings,
   AdminSizes,
@@ -40,8 +40,8 @@ import {
   VendorOrders,
   VendorOverview,
   VendorPayouts,
-  VendorProfile,
   VendorProducts,
+  VendorProfile,
   VendorReturns,
   VendorReviews,
   VendorSettings,
@@ -52,12 +52,13 @@ import BlogPage from "./pages/store/BlogPage";
 import CartPage from "./pages/store/CartPage";
 import CategoriesPage from "./pages/store/CategoriesPage";
 import ContactPage from "./pages/store/ContactPage";
+import CustomerPage from "./pages/store/Customer";
 import HomePage from "./pages/store/HomePage";
+import OrdersPage from "./pages/store/Orders";
 import ProductDetailsPage from "./pages/store/ProductDetailsPage";
+import ProfilePage from "./pages/store/Profile";
+import SettingsPage from "./pages/store/Setting";
 import ShopPage from "./pages/store/ShopPage";
-import Profile from "./pages/store/Profile";
-import Orders from "./pages/store/Orders";
-import Settings from "./pages/store/Setting";
 
 const App = () => {
   const location = useLocation();
@@ -70,15 +71,18 @@ const App = () => {
           <Route path="shop" element={<ShopPage />} />
           <Route path="shop/:productId" element={<ProductDetailsPage />} />
           <Route path="categories" element={<CategoriesPage />} />
+          <Route path="categories/:categorySlug" element={<ShopPage />} />
+          <Route path="category/:categorySlug" element={<ShopPage />} />
+          <Route path="product/:id" element={<ProductDetailsPage />} />
           <Route path="cart" element={<CartPage />} />
           <Route path="blog" element={<BlogPage />} />
           <Route path="contact" element={<ContactPage />} />
           <Route path="about" element={<AboutPage />} />
           <Route path="auth" element={<AuthPage />} />
-<Route path="/profile" element={<Profile />} />
-<Route path="/orders" element={<Orders />} />
-<Route path="/settings" element={<Settings />} />
-          
+          <Route path="profile" element={<ProfilePage />} />
+          <Route path="orders" element={<OrdersPage />} />
+          <Route path="settings" element={<SettingsPage />} />
+          <Route path="customer" element={<CustomerPage />} />
         </Route>
 
         <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>
@@ -135,4 +139,3 @@ const App = () => {
 };
 
 export default App;
-

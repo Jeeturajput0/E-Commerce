@@ -15,8 +15,8 @@ import Card from "../../components/common/Card";
 import PageTransition from "../../components/common/PageTransition";
 import ProductCard from "../../components/store/ProductCard";
 import { useApp } from "../../context/AppContext";
+import PromoSection from "../../features/store/components/PromoSection";
 import SliderHome from "./SliderHome";
-import PromoSection from "./Promot";
 import CategoriesSection from "./CategoriesPage";
 import CategorySection from "./CategoriesSection";
 

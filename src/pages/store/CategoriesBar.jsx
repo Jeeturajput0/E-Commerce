@@ -16,8 +16,7 @@ const categories = [
   "Laptops",
   "Footwear",
   "Toys",
-  "Gaming",
-];
+  ];
 
 export default function CategoriesBar() {
   const { pathname } = useLocation();

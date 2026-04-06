@@ -71,6 +71,10 @@
 }
 
 @layer components {
+  .container-custom {
+    @apply mx-auto w-full max-w-7xl;
+  }
+
   .glass {
     @apply border border-white/70 bg-white/70 backdrop-blur-2xl shadow-glass;
   }
@@ -85,5 +89,16 @@
 
   .dark .dashboard-shell {
     @apply border-secondary-700/80 bg-secondary-900/95;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
   }
 }

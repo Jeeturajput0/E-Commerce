@@ -43,6 +43,7 @@ const Footer = () => (
             <Link to="/admin/dashboard">Admin</Link>
             <Link to="/vendor/dashboard">Vendor</Link>
             <Link to="/user/dashboard">Customer</Link>
+            <Link to="/contact">Contact Us</Link>
           </div>
         </div>
 
