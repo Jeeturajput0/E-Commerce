@@ -4,6 +4,7 @@ import MainLayout from "./components/layout/MainLayout";
 import NotFoundPage from "./pages/NotFoundPage";
 import {
   AdminBanners,
+  AdminBrands,
   AdminBlog,
   AdminCategories,
   AdminColors,
@@ -11,6 +12,7 @@ import {
   AdminCustomers,
   AdminDashboardLayout,
   AdminOrders,
+  AdminOffers,
   AdminOverview,
   AdminPayments,
   AdminProducts,
@@ -96,6 +98,7 @@ const App = () => {
           <Route index element={<AdminOverview />} />
           <Route path="products" element={<AdminProducts />} />
           <Route path="categories" element={<AdminCategories />} />
+          <Route path="brands" element={<AdminBrands />} />
           <Route path="orders" element={<AdminOrders />} />
           <Route path="payments" element={<AdminPayments />} />
           <Route path="profile" element={<AdminProfile />} />
@@ -103,7 +106,7 @@ const App = () => {
           <Route path="vendors" element={<AdminVendors />} />
           <Route path="reviews" element={<AdminReviews />} />
           <Route path="coupons" element={<AdminCoupons />} />
-          <Route path="blog" element={<AdminBlog />} />
+          <Route path="blog" element={<AdminOffers />} />
           <Route path="colors" element={<AdminColors />} />
           <Route path="sizes" element={<AdminSizes />} />
           <Route path="banners" element={<AdminBanners />} />

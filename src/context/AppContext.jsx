@@ -1,17 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
-import {
-  blogs as blogsData,
-  categories as categoriesData,
-  coupons as couponsData,
-  earnings as earningsData,
-  orders as ordersData,
-  payments as paymentsData,
-  products as productsData,
-  reviews as reviewsData,
-  team as teamData,
-  testimonials as testimonialsData,
-  users as usersData,
-} from "../data/dummyData";
+import { api } from "../lib/api";
 
 const AppContext = createContext(null);
 
@@ -22,17 +10,17 @@ const dashboardMap = {
 };
 
 export const AppProvider = ({ children }) => {
-  const [products, setProducts] = useState(productsData);
-  const [users, setUsers] = useState(usersData);
-  const [orders, setOrders] = useState(ordersData);
-  const [payments, setPayments] = useState(paymentsData);
-  const [reviews] = useState(reviewsData);
-  const [blogs] = useState(blogsData);
-  const [categories] = useState(categoriesData);
-  const [coupons, setCoupons] = useState(couponsData);
-  const [earnings] = useState(earningsData);
-  const [testimonials] = useState(testimonialsData);
-  const [team] = useState(teamData);
+  const [products, setProducts] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [payments, setPayments] = useState([]);
+  const [reviews] = useState([]);
+  const [blogs] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [coupons, setCoupons] = useState([]);
+  const [earnings] = useState([]);
+  const [testimonials] = useState([]);
+  const [team] = useState([]);
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [toasts, setToasts] = useState([]);
@@ -50,6 +38,13 @@ export const AppProvider = ({ children }) => {
     }
     localStorage.setItem("ec-theme", theme);
   }, [theme]);
+
+  useEffect(() => {
+    const normalizeProduct = (item) => ({ ...item, id: item._id, title: item.name, price: item.saleprice, stock: item.quantity, description: item.details, images: item.image ? [item.image] : [], category: item.category?.name || "", rating: 0 });
+    Promise.all([api("/products"), fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3000/api"}/categories`).then((r) => r.json())])
+      .then(([productData, categoryResponse]) => { setProducts(productData.map(normalizeProduct)); setCategories((categoryResponse.data || []).map((item) => ({ ...item, id: item._id, count: 0 }))); })
+      .catch(() => { setProducts([]); setCategories([]); });
+  }, []);
 
   const currentUser = useMemo(() => {
     if (activeRole === "admin") return users.find((user) => user.role === "admin");
