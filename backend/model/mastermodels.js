@@ -1,0 +1,6 @@
+const mongoose = require("mongoose");
+const reviewSchema = new mongoose.Schema({ product: { type: mongoose.Schema.Types.ObjectId, ref: "Product" }, customer: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, rating: Number, comment: String, isActive: { type: Boolean, default: true } }, { timestamps: true });
+const couponSchema = new mongoose.Schema({ code: { type: String, required: true, unique: true, uppercase: true }, discountType: { type: String, enum: ["percentage", "fixed"], default: "percentage" }, discountValue: Number, minimumAmount: Number, expiryDate: Date, isActive: { type: Boolean, default: true } }, { timestamps: true });
+const offerSchema = new mongoose.Schema({ title: { type: String, required: true }, description: String, discount: Number, startDate: Date, endDate: Date, isActive: { type: Boolean, default: true } }, { timestamps: true });
+const bannerSchema = new mongoose.Schema({ title: { type: String, required: true }, description: String, image: String, link: String, isActive: { type: Boolean, default: true } }, { timestamps: true });
+module.exports = { Review: mongoose.model("Review", reviewSchema), Coupon: mongoose.model("Coupon", couponSchema), Offer: mongoose.model("Offer", offerSchema), Banner: mongoose.model("Banner", bannerSchema) };

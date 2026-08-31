@@ -59,6 +59,7 @@ import ProductDetailsPage from "./pages/store/ProductDetailsPage";
 import ProfilePage from "./pages/store/Profile";
 import SettingsPage from "./pages/store/Setting";
 import ShopPage from "./pages/store/ShopPage";
+import RoleRoute from "./components/common/RoleRoute";
 
 const App = () => {
   const location = useLocation();
@@ -78,13 +79,19 @@ const App = () => {
           <Route path="blog" element={<BlogPage />} />
           <Route path="contact" element={<ContactPage />} />
           <Route path="about" element={<AboutPage />} />
-          <Route path="auth" element={<AuthPage />} />
+          <Route path="login" element={<AuthPage />} />
+          <Route path="register" element={<AuthPage />} />
+          <Route path="auth" element={<Navigate to="/login" replace />} />
           <Route path="profile" element={<ProfilePage />} />
           <Route path="orders" element={<OrdersPage />} />
           <Route path="settings" element={<SettingsPage />} />
           <Route path="customer" element={<CustomerPage />} />
         </Route>
 
+        <Route path="/admin/login" element={<AuthPage adminOnly />} />
+        <Route path="/admin/register" element={<AuthPage adminOnly initialMode="signup" />} />
+        <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+        <Route element={<RoleRoute role="admin" />}>
         <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>
           <Route index element={<AdminOverview />} />
           <Route path="products" element={<AdminProducts />} />
@@ -103,7 +110,10 @@ const App = () => {
           <Route path="settings" element={<AdminSettings />} />
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Route>
+        </Route>
 
+        <Route path="/vendor" element={<Navigate to="/vendor/dashboard" replace />} />
+        <Route element={<RoleRoute role="vendor" />}>
         <Route path="/vendor/dashboard" element={<VendorDashboardLayout />}>
           <Route index element={<VendorOverview />} />
           <Route path="products" element={<VendorProducts />} />
@@ -118,6 +128,7 @@ const App = () => {
           <Route path="coupons" element={<VendorCoupons />} />
           <Route path="settings" element={<VendorSettings />} />
           <Route path="*" element={<Navigate to="/vendor/dashboard" replace />} />
+        </Route>
         </Route>
 
         <Route path="/user/dashboard" element={<CustomerDashboardLayout />}>
