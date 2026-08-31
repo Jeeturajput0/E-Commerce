@@ -1,2 +1,17 @@
-const router = require("express").Router(); const product = require("../controller/productController"); const Category = require("../model/categorymodel"); const Brand = require("../model/brandmodel"); const { Banner, Offer } = require("../model/mastermodels");
-router.get("/products", product.publicList); router.get("/categories", async (req, res) => { try { res.json({ success: true, data: await Category.find({ isActive: true }) }); } catch (error) { res.status(500).json({ success: false, message: "Could not load categories", error: error.message }); } }); router.get("/brands", async (req, res) => { try { res.json({ success: true, data: await Brand.find() }); } catch (error) { res.status(500).json({ success: false, message: "Could not load brands", error: error.message }); } }); router.get("/banners", async (req, res) => { try { res.json({ success: true, data: await Banner.find({ isActive: true }) }); } catch (error) { res.status(500).json({ success: false, message: "Could not load banners", error: error.message }); } }); router.get("/offers", async (req, res) => { try { res.json({ success: true, data: await Offer.find({ isActive: true }) }); } catch (error) { res.status(500).json({ success: false, message: "Could not load offers", error: error.message }); } }); router.get("/products/:id", product.publicOne); module.exports = router;
+const router = require("express").Router();
+const product = require("../controller/productController");
+const order = require("../controller/orderController");
+const Category = require("../model/categorymodel");
+const Brand = require("../model/brandmodel");
+const { Banner, Offer } = require("../model/mastermodels");
+
+router.get("/products", product.publicList);
+router.get("/categories", async (req, res) => { try { res.json({ success: true, data: await Category.find({ isActive: true }) }); } catch (error) { res.status(500).json({ success: false, message: "Could not load categories", error: error.message }); } });
+router.get("/brands", async (req, res) => { try { res.json({ success: true, data: await Brand.find() }); } catch (error) { res.status(500).json({ success: false, message: "Could not load brands", error: error.message }); } });
+router.get("/banners", async (req, res) => { try { res.json({ success: true, data: await Banner.find({ isActive: true }) }); } catch (error) { res.status(500).json({ success: false, message: "Could not load banners", error: error.message }); } });
+router.get("/offers", async (req, res) => { try { res.json({ success: true, data: await Offer.find({ isActive: true }) }); } catch (error) { res.status(500).json({ success: false, message: "Could not load offers", error: error.message }); } });
+router.get("/products/:id", product.publicOne);
+router.post("/orders", order.createOrder);
+
+module.exports = router;
+

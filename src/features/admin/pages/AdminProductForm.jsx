@@ -4,7 +4,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import Button from "../../../components/common/Button";
 import Card from "../../../components/common/Card";
 import { api } from "../../../lib/api";
-
 const empty = {
   name: "",
   details: "",
@@ -16,34 +15,29 @@ const empty = {
   saleprice: "",
   quantity: "",
   image: "",
+  isActive: true,
 };
-
-const VendorAddProduct = () => {
+const AdminProductForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [form, setForm] = useState(empty);
-  const [file, setFile] = useState(null);
-  const [lists, setLists] = useState({
-    category: [],
-    brand: [],
-    size: [],
-    color: [],
-  });
-  const [error, setError] = useState("");
-
+  const [form, setForm] = useState(empty),
+    [file, setFile] = useState(null),
+    [lists, setLists] = useState({
+      category: [],
+      brand: [],
+      size: [],
+      color: [],
+    }),
+    [error, setError] = useState("");
   useEffect(() => {
     (async () => {
       try {
-        const [category, brand, size, color] = await Promise.all([
-          api("/vendor/categories"),
-          api("/vendor/brands"),
-          api("/vendor/sizes"),
-          api("/vendor/colors"),
-        ]);
+        const [category, brand, size, color] = await Promise.all(
+          ["category", "brand", "size", "color"].map((x) => api(`/admin/${x}`)),
+        );
         setLists({ category, brand, size, color });
-
         if (id) {
-          const item = await api(`/vendor/products/${id}`);
+          const item = await api(`/admin/products/${id}`);
           setForm({
             ...empty,
             ...item,
@@ -58,14 +52,12 @@ const VendorAddProduct = () => {
       }
     })();
   }, [id]);
-
   const set = (key, value) =>
     setForm((old) =>
       key === "category"
         ? { ...old, category: value, brand: "", size: "" }
-        : { ...old, [key]: value }
+        : { ...old, [key]: value },
     );
-
   const save = async (e) => {
     e.preventDefault();
     try {
@@ -76,45 +68,40 @@ const VendorAddProduct = () => {
         saleprice: +form.saleprice,
         quantity: +form.quantity,
       }).forEach(([key, value]) => body.append(key, value));
-
       if (file) body.set("image", file);
-
-      await api(id ? `/vendor/products/${id}` : "/vendor/products", {
+      await api(id ? `/admin/products/${id}` : "/admin/products", {
         method: id ? "PUT" : "POST",
         body,
       });
-
-      navigate("/vendor/dashboard/products");
+      navigate("/admin/dashboard/products");
     } catch (x) {
       setError(x.message);
     }
   };
-
   const matching = (key) =>
     form.category
       ? lists[key].filter((item) =>
-          item.categories?.some((c) => String(c._id || c) === form.category)
+          item.categories?.some((c) => String(c._id || c) === form.category),
         )
       : lists[key];
-
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <button
-        onClick={() => navigate("/vendor/dashboard/products")}
-        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-primary-600"
+        onClick={() => navigate("/admin/dashboard/products")}
+        className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500"
       >
         <ArrowLeft className="h-4 w-4" />
         Back to products
       </button>
       <div>
         <p className="text-xs font-semibold uppercase tracking-[.18em] text-primary-600">
-          Vendor Catalog
+          Catalog
         </p>
         <h2 className="mt-1 text-3xl font-bold">
           {id ? "Edit Product" : "Add Product"}
         </h2>
         <p className="mt-2 text-slate-500">
-          Vendor products are submitted for admin approval after saving.
+          Admin products are published immediately after saving.
         </p>
       </div>
       <Card className="border border-slate-200 p-6">
@@ -224,18 +211,15 @@ const VendorAddProduct = () => {
           <div className="flex justify-end gap-3 border-t pt-5">
             <Button
               variant="ghost"
-              onClick={() => navigate("/vendor/dashboard/products")}
+              onClick={() => navigate("/admin/dashboard/products")}
             >
               Cancel
             </Button>
-            <Button type="submit">
-              {id ? "Save changes" : "Submit for approval"}
-            </Button>
+            <Button type="submit">{id ? "Save changes" : "Add Product"}</Button>
           </div>
         </form>
       </Card>
     </div>
   );
 };
-
-export default VendorAddProduct;
+export default AdminProductForm;

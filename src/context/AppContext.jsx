@@ -151,6 +151,10 @@ export const AppProvider = ({ children }) => {
     addToast("Item removed from cart", "warning");
   };
 
+  const clearCart = () => {
+    setCart([]);
+  };
+
   const toggleWishlist = (productId) => {
     setWishlist((prev) => {
       if (prev.includes(productId)) {
@@ -266,6 +270,7 @@ export const AppProvider = ({ children }) => {
     addToCart,
     updateCartQty,
     removeCartItem,
+    clearCart,
     toggleWishlist,
     updateOrderStatus,
     toggleVendorApproval,

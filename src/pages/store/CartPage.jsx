@@ -1,11 +1,72 @@
-import { Trash2 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Trash2, CheckCircle2 } from "lucide-react";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import Button from "../../components/common/Button";
+import Modal from "../../components/common/Modal";
 import PageTransition from "../../components/common/PageTransition";
 import { useApp } from "../../context/AppContext";
+import { api } from "../../lib/api";
 
 const CartPage = () => {
-  const { cartDetails, cartTotal, updateCartQty, removeCartItem } = useApp();
+  const { cartDetails, cartTotal, updateCartQty, removeCartItem, clearCart, addToast } = useApp();
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [successOrder, setSuccessOrder] = useState(null);
+  const navigate = useNavigate();
+
+  const [form, setForm] = useState({
+    customerName: "",
+    customerMobile: "",
+    customerEmail: "",
+    shippingAddress: "",
+  });
+
+  const handleChange = (e) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handlePlaceOrder = async (e) => {
+    e.preventDefault();
+    if (!form.customerName || !form.customerMobile || !form.shippingAddress) {
+      addToast("Please fill in required shipping details", "warning");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const items = cartDetails.map((item) => ({
+        product: item.product._id || item.product.id,
+        name: item.product.title,
+        image: item.product.images?.[0] || item.product.image || "",
+        price: item.product.price,
+        quantity: item.quantity,
+      }));
+
+      const payload = {
+        customerName: form.customerName,
+        customerMobile: form.customerMobile,
+        customerEmail: form.customerEmail,
+        shippingAddress: form.shippingAddress,
+        items,
+        totalAmount: cartTotal + 12,
+        paymentMethod: "COD",
+      };
+
+      const res = await api("/orders", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+
+      setSuccessOrder(res);
+      clearCart();
+      setCheckoutOpen(false);
+      addToast("Cash on Delivery order placed successfully!");
+    } catch (err) {
+      addToast(err.message || "Failed to place order", "warning");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <PageTransition className="space-y-6">
@@ -66,7 +127,9 @@ const CartPage = () => {
                 <span>${(cartTotal + 12).toFixed(2)}</span>
               </div>
             </div>
-            <Button className="mt-5 w-full">Proceed to Checkout</Button>
+            <Button className="mt-5 w-full" onClick={() => setCheckoutOpen(true)}>
+              Proceed to Checkout (COD)
+            </Button>
           </aside>
         </div>
       ) : (
@@ -76,6 +139,112 @@ const CartPage = () => {
             Continue shopping
           </Link>
         </div>
+      )}
+
+      {/* Checkout Modal */}
+      {checkoutOpen && (
+        <Modal
+          title="Cash on Delivery Checkout"
+          description="Please fill in your delivery details below."
+          isOpen={checkoutOpen}
+          onClose={() => setCheckoutOpen(false)}
+        >
+          <form onSubmit={handlePlaceOrder} className="space-y-4 pt-2">
+            <label className="grid gap-1 text-sm font-semibold">
+              Full Name *
+              <input
+                required
+                name="customerName"
+                value={form.customerName}
+                onChange={handleChange}
+                placeholder="John Doe"
+                className="rounded-xl border p-2.5 font-normal outline-none focus:border-primary-500"
+              />
+            </label>
+            <label className="grid gap-1 text-sm font-semibold">
+              Mobile Number *
+              <input
+                required
+                name="customerMobile"
+                value={form.customerMobile}
+                onChange={handleChange}
+                placeholder="+91 9876543210"
+                className="rounded-xl border p-2.5 font-normal outline-none focus:border-primary-500"
+              />
+            </label>
+            <label className="grid gap-1 text-sm font-semibold">
+              Email Address (Optional)
+              <input
+                type="email"
+                name="customerEmail"
+                value={form.customerEmail}
+                onChange={handleChange}
+                placeholder="john@example.com"
+                className="rounded-xl border p-2.5 font-normal outline-none focus:border-primary-500"
+              />
+            </label>
+            <label className="grid gap-1 text-sm font-semibold">
+              Delivery Address *
+              <textarea
+                required
+                rows="3"
+                name="shippingAddress"
+                value={form.shippingAddress}
+                onChange={handleChange}
+                placeholder="House No, Street, City, Pincode"
+                className="rounded-xl border p-2.5 font-normal outline-none focus:border-primary-500"
+              />
+            </label>
+
+            <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3 text-sm flex justify-between items-center">
+              <div>
+                <p className="font-semibold">Payment Method</p>
+                <p className="text-xs text-slate-500">Pay cash upon delivery</p>
+              </div>
+              <span className="font-bold text-primary-600">Cash on Delivery</span>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2 border-t">
+              <Button type="button" variant="ghost" onClick={() => setCheckoutOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={loading}>
+                {loading ? "Placing Order..." : `Confirm Order ($${(cartTotal + 12).toFixed(2)})`}
+              </Button>
+            </div>
+          </form>
+        </Modal>
+      )}
+
+      {/* Success Modal */}
+      {successOrder && (
+        <Modal
+          title="Order Confirmed!"
+          isOpen={Boolean(successOrder)}
+          onClose={() => setSuccessOrder(null)}
+        >
+          <div className="text-center space-y-4 py-4">
+            <CheckCircle2 className="h-16 w-16 text-emerald-500 mx-auto" />
+            <h3 className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+              Thank You for Your Order!
+            </h3>
+            <p className="text-slate-600 dark:text-slate-300">
+              Your Cash on Delivery order has been successfully placed.
+            </p>
+            <div className="rounded-xl bg-slate-50 dark:bg-slate-800 p-4 text-left space-y-2 text-sm">
+              <p><span className="font-semibold">Order ID:</span> {successOrder._id}</p>
+              <p><span className="font-semibold">Customer:</span> {successOrder.customerName} ({successOrder.customerMobile})</p>
+              <p><span className="font-semibold">Address:</span> {successOrder.shippingAddress}</p>
+              <p><span className="font-semibold">Total Amount:</span> ${successOrder.totalAmount}</p>
+              <p><span className="font-semibold">Payment Method:</span> Cash on Delivery</p>
+            </div>
+            <div className="flex justify-center pt-2">
+              <Button onClick={() => { setSuccessOrder(null); navigate("/"); }}>
+                Continue Shopping
+              </Button>
+            </div>
+          </div>
+        </Modal>
       )}
     </PageTransition>
   );

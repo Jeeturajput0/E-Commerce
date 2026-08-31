@@ -4,6 +4,7 @@ const Category = require("../model/categorymodel");
 const Brand = require("../model/brandmodel");
 const Size = require("../model/sizemodel");
 const Color = require("../model/colormodel");
+const Order = require("../model/ordermodel");
 const { Review, Coupon, Offer, Banner } = require("../model/mastermodels");
 const modelMap = {
   category: Category,
@@ -25,6 +26,8 @@ exports.dashboard = async (req, res) => {
       totalUsers,
       totalVendors,
       totalCategories,
+      totalOrders,
+      pendingOrders,
     ] = await Promise.all([
       Product.countDocuments(),
       Product.countDocuments({ approvalStatus: "pending" }),
@@ -33,6 +36,8 @@ exports.dashboard = async (req, res) => {
       User.countDocuments(),
       User.countDocuments({ role: "vendor" }),
       Category.countDocuments(),
+      Order.countDocuments(),
+      Order.countDocuments({ status: "Pending" }),
     ]);
     res.json({
       success: true,
@@ -41,8 +46,8 @@ exports.dashboard = async (req, res) => {
         pendingProducts,
         approvedProducts,
         rejectedProducts,
-        totalOrders: 0,
-        pendingOrders: 0,
+        totalOrders,
+        pendingOrders,
         totalUsers,
         totalVendors,
         totalCategories,
@@ -122,12 +127,16 @@ exports.masterCreate = async (req, res) => {
       return res
         .status(404)
         .json({ success: false, message: "Resource not found" });
+    const payload = { ...req.body };
+    if (req.file) {
+      payload.image = `/uploads/${req.file.filename}`;
+    }
     res
       .status(201)
       .json({
         success: true,
         message: "Created",
-        data: await Model.create(req.body),
+        data: await Model.create(payload),
       });
   } catch (error) {
     res
@@ -155,9 +164,13 @@ exports.masterOne = async (req, res) => {
 exports.masterUpdate = async (req, res) => {
   try {
     const Model = modelMap[req.params.resource];
+    const payload = { ...req.body };
+    if (req.file) {
+      payload.image = `/uploads/${req.file.filename}`;
+    }
     const data =
       Model &&
-      (await Model.findByIdAndUpdate(req.params.id, req.body, {
+      (await Model.findByIdAndUpdate(req.params.id, payload, {
         new: true,
         runValidators: true,
       }));

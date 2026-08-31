@@ -62,6 +62,8 @@ import ProfilePage from "./pages/store/Profile";
 import SettingsPage from "./pages/store/Setting";
 import ShopPage from "./pages/store/ShopPage";
 import RoleRoute from "./components/common/RoleRoute";
+import AdminMasterDataForm from "./features/admin/pages/AdminMasterDataForm";
+import AdminProductForm from "./features/admin/pages/AdminProductForm";
 
 const App = () => {
   const location = useLocation();
@@ -97,6 +99,8 @@ const App = () => {
         <Route path="/admin/dashboard" element={<AdminDashboardLayout />}>
           <Route index element={<AdminOverview />} />
           <Route path="products" element={<AdminProducts />} />
+          <Route path="products/add" element={<AdminProductForm />} />
+          <Route path="products/:id/edit" element={<AdminProductForm />} />
           <Route path="categories" element={<AdminCategories />} />
           <Route path="brands" element={<AdminBrands />} />
           <Route path="orders" element={<AdminOrders />} />
@@ -111,6 +115,8 @@ const App = () => {
           <Route path="sizes" element={<AdminSizes />} />
           <Route path="banners" element={<AdminBanners />} />
           <Route path="settings" element={<AdminSettings />} />
+          <Route path=":resource/add" element={<AdminMasterDataForm />} />
+          <Route path=":resource/:id/edit" element={<AdminMasterDataForm />} />
           <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
         </Route>
         </Route>

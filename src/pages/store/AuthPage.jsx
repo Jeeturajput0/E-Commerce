@@ -24,6 +24,7 @@ const AuthPage = ({ adminOnly = false, initialMode = "login" }) => {
       const endpoint = mode === "login" ? "/user/login" : adminOnly ? "/user/admin/register" : "/user/register";
       const data = await api(endpoint, { method: "POST", body: JSON.stringify(form) });
       if (adminOnly && data.user.role !== "admin") { localStorage.removeItem("token"); localStorage.removeItem("role"); throw new Error("Use an administrator account on this page"); }
+      if (mode === "signup") { navigate(adminOnly ? "/admin/login" : "/login", { state: { message: "Registration successful. Please login to continue." } }); return; }
       localStorage.setItem("token", data.token); localStorage.setItem("role", data.user.role); localStorage.setItem("userdetails", JSON.stringify(data.user));
       navigate(data.user.role === "admin" ? "/admin" : data.user.role === "vendor" ? "/vendor" : "/");
     } catch (requestError) { setError(requestError.message); }
