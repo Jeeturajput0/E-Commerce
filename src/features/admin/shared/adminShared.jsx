@@ -44,6 +44,12 @@ export const adminLinks = [
     icon: Tags,
     group: "master",
   },
+  {
+    path: "/admin/dashboard/brands",
+    label: "Brands",
+    icon: Tags,
+    group: "master",
+  },
   { path: "/admin/dashboard/vendors", label: "Vendors", icon: UserSquare2 },
   {
     path: "/admin/dashboard/reviews",

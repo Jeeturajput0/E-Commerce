@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { LockKeyhole, Mail, Phone, User } from "lucide-react";
+import { api } from "../../lib/api";
 
 const features = [
   "Fast checkout and order tracking",
@@ -11,8 +12,22 @@ const features = [
 const inputClassName =
   "w-full rounded-2xl border border-secondary-200 bg-white px-4 py-3 text-sm text-secondary-900 outline-none transition placeholder:text-secondary-400 focus:border-primary-500 focus:ring-4 focus:ring-primary-100 dark:border-secondary-700 dark:bg-secondary-950 dark:text-secondary-100 dark:placeholder:text-secondary-500 dark:focus:border-primary-400 dark:focus:ring-primary-950/40";
 
-const AuthPage = () => {
-  const [mode, setMode] = useState("login");
+const AuthPage = ({ adminOnly = false, initialMode = "login" }) => {
+  const [mode, setMode] = useState(initialMode);
+  const [form, setForm] = useState({ name: "", email: "", mobile: "", password: "", role: "customer" });
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
+  const update = (key) => (event) => setForm((previous) => ({ ...previous, [key]: event.target.value }));
+  const submit = async (event) => {
+    event.preventDefault(); setError("");
+    try {
+      const endpoint = mode === "login" ? "/user/login" : adminOnly ? "/user/admin/register" : "/user/register";
+      const data = await api(endpoint, { method: "POST", body: JSON.stringify(form) });
+      if (adminOnly && data.user.role !== "admin") { localStorage.removeItem("token"); localStorage.removeItem("role"); throw new Error("Use an administrator account on this page"); }
+      localStorage.setItem("token", data.token); localStorage.setItem("role", data.user.role); localStorage.setItem("userdetails", JSON.stringify(data.user));
+      navigate(data.user.role === "admin" ? "/admin" : data.user.role === "vendor" ? "/vendor" : "/");
+    } catch (requestError) { setError(requestError.message); }
+  };
 
   return (
     <section className="relative overflow-hidden rounded-[2rem] border border-secondary-200/80 bg-white/90 shadow-glass dark:border-secondary-700/80 dark:bg-secondary-950/80">
@@ -48,7 +63,9 @@ const AuthPage = () => {
 
         <div className="rounded-[1.75rem] border border-secondary-200 bg-secondary-50/80 p-4 shadow-sm dark:border-secondary-700 dark:bg-secondary-900/60 sm:p-6">
           <div className="grid grid-cols-2 rounded-2xl bg-white p-1 shadow-sm dark:bg-secondary-950">
-            <button
+            {adminOnly && <button type="button" onClick={() => setMode("login")} className={`rounded-2xl px-4 py-3 text-sm font-semibold ${mode === "login" ? "bg-primary-600 text-white" : "text-secondary-600"}`}>Admin Login</button>}
+            {adminOnly && <button type="button" onClick={() => setMode("signup")} className={`rounded-2xl px-4 py-3 text-sm font-semibold ${mode === "signup" ? "bg-primary-600 text-white" : "text-secondary-600"}`}>Register Admin</button>}
+            {!adminOnly && <button
               type="button"
               onClick={() => setMode("login")}
               className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
@@ -58,8 +75,8 @@ const AuthPage = () => {
               }`}
             >
               Login
-            </button>
-            <button
+            </button>}
+            {!adminOnly && <button
               type="button"
               onClick={() => setMode("signup")}
               className={`rounded-2xl px-4 py-3 text-sm font-semibold transition ${
@@ -69,7 +86,7 @@ const AuthPage = () => {
               }`}
             >
               Sign Up
-            </button>
+            </button>}
           </div>
 
           <div className="mt-6 space-y-2">
@@ -83,14 +100,14 @@ const AuthPage = () => {
             </p>
           </div>
 
-          <form className="mt-6 space-y-4">
+          <form className="mt-6 space-y-4" onSubmit={submit}>
             {mode === "signup" && (
               <label className="block">
                 <span className="mb-2 flex items-center gap-2 text-sm font-medium text-secondary-700 dark:text-secondary-200">
                   <User className="h-4 w-4" />
                   Full Name
                 </span>
-                <input type="text" placeholder="Enter your full name" className={inputClassName} />
+                <input required type="text" placeholder="Enter your full name" value={form.name} onChange={update("name")} className={inputClassName} />
               </label>
             )}
 
@@ -99,7 +116,7 @@ const AuthPage = () => {
                 <Mail className="h-4 w-4" />
                 Email Address
               </span>
-              <input type="email" placeholder="you@example.com" className={inputClassName} />
+              <input required type="email" placeholder="you@example.com" value={form.email} onChange={update("email")} className={inputClassName} />
             </label>
 
             {mode === "signup" && (
@@ -108,7 +125,7 @@ const AuthPage = () => {
                   <Phone className="h-4 w-4" />
                   Phone Number
                 </span>
-                <input type="tel" placeholder="+91 98765 43210" className={inputClassName} />
+                <input type="tel" placeholder="+91 98765 43210" value={form.mobile} onChange={update("mobile")} className={inputClassName} />
               </label>
             )}
 
@@ -117,7 +134,7 @@ const AuthPage = () => {
                 <LockKeyhole className="h-4 w-4" />
                 Password
               </span>
-              <input type="password" placeholder="Enter your password" className={inputClassName} />
+              <input required type="password" placeholder="Enter your password" value={form.password} onChange={update("password")} className={inputClassName} />
             </label>
 
             {mode === "signup" && (
@@ -129,6 +146,8 @@ const AuthPage = () => {
                 <input type="password" placeholder="Confirm your password" className={inputClassName} />
               </label>
             )}
+            {mode === "signup" && !adminOnly && <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-200">Account type<select value={form.role} onChange={update("role")} className={`${inputClassName} mt-2`}><option value="customer">Customer</option><option value="vendor">Vendor</option></select></label>}
+            {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
             <button
               type="submit"
@@ -138,7 +157,7 @@ const AuthPage = () => {
             </button>
           </form>
 
-          <div className="mt-5 text-center text-sm text-secondary-600 dark:text-secondary-300">
+          {!adminOnly && <div className="mt-5 text-center text-sm text-secondary-600 dark:text-secondary-300">
             {mode === "login" ? "New here?" : "Already have an account?"}{" "}
             <button
               type="button"
@@ -147,10 +166,10 @@ const AuthPage = () => {
             >
               {mode === "login" ? "Create an account" : "Login instead"}
             </button>
-          </div>
+          </div>}
 
           <div className="mt-6 rounded-2xl border border-dashed border-secondary-300 px-4 py-3 text-xs text-secondary-500 dark:border-secondary-700 dark:text-secondary-400">
-            Demo page is ready. Backend auth integration can be connected here later.
+            {adminOnly ? "Register the first administrator, then use this page to sign in." : "Create a customer or vendor account to get started."}
             <Link to="/shop" className="ml-1 font-semibold text-primary-600 dark:text-primary-400">
               Continue shopping
             </Link>

@@ -1,28 +1,8 @@
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Button from "../../../components/common/Button";
 import Card from "../../../components/common/Card";
-import { useApp } from "../../../context/AppContext";
+import { api } from "../../../lib/api";
 import { sectionTitleClass } from "../constants";
-import { VendorProductForm } from "../widgets/vendorWidgets";
-
-const VendorAddProduct = () => {
-  const { addProduct, currentUser } = useApp();
-
-  return (
-    <div className="space-y-4">
-      <h2 className={sectionTitleClass}>Add Product</h2>
-      <Card>
-        <VendorProductForm
-          onSubmit={(form) =>
-            addProduct({
-              ...form,
-              vendorId: currentUser?.id,
-              sold: 0,
-              rating: 4.5,
-            })
-          }
-        />
-      </Card>
-    </div>
-  );
-};
-
+const VendorAddProduct = () => { const [categories, setCategories] = useState([]), [form, setForm] = useState({ name: "", details: "", category: "", mrp: "", saleprice: "", quantity: "", image: "" }), [error, setError] = useState(""); const navigate = useNavigate(); useEffect(() => { api("/vendor/categories").then(setCategories).catch((e) => setError(e.message)); }, []); const change = (e) => setForm({ ...form, [e.target.name]: e.target.value }); const submit = async (e) => { e.preventDefault(); try { await api("/vendor/products", { method: "POST", body: JSON.stringify({ ...form, mrp: +form.mrp, saleprice: +form.saleprice, quantity: +form.quantity }) }); navigate("/vendor/dashboard/products"); } catch (x) { setError(x.message); } }; return <div className="space-y-4"><h2 className={sectionTitleClass}>Add Product</h2><Card><form className="grid gap-3" onSubmit={submit}>{error && <p className="text-red-600">{error}</p>}<input required name="name" placeholder="Product name" value={form.name} onChange={change} className="rounded-xl border p-2"/><textarea name="details" placeholder="Description" value={form.details} onChange={change} className="rounded-xl border p-2"/><select required name="category" value={form.category} onChange={change} className="rounded-xl border p-2"><option value="">Select category</option>{categories.map((c) => <option key={c._id} value={c._id}>{c.name}</option>)}</select><div className="grid grid-cols-3 gap-3">{[["mrp", "MRP"], ["saleprice", "Sale price"], ["quantity", "Quantity"]].map(([name, label]) => <input required key={name} name={name} min="0" type="number" placeholder={label} value={form[name]} onChange={change} className="rounded-xl border p-2"/>)}</div><input name="image" placeholder="Image URL" value={form.image} onChange={change} className="rounded-xl border p-2"/><Button type="submit">Submit for approval</Button></form></Card></div>; };
 export default VendorAddProduct;
