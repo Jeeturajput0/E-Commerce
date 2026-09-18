@@ -93,6 +93,7 @@ const App = () => {
         </Route>
 
         <Route path="/admin/login" element={<AuthPage adminOnly />} />
+        <Route path="/login/admin" element={<AuthPage adminOnly />} />
         <Route path="/admin/register" element={<AuthPage adminOnly initialMode="signup" />} />
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route element={<RoleRoute role="admin" />}>

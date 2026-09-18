@@ -14,7 +14,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import { useApp } from "../../context/AppContext";
 import CategoriesBar from "../../pages/store/CategoriesBar";
 
@@ -22,12 +22,6 @@ const navLinks = [
   { to: "/", label: "Home" },
   { to: "/shop", label: "Offers" },
   { to: "/customer", label: "Customer Care" },
-];
-
-const dashboardLinks = [
-  { role: "admin", label: "Admin Dashboard" },
-  { role: "vendor", label: "Vendor Dashboard" },
-  { role: "customer", label: "Customer Dashboard" },
 ];
 
 const profileLinks = [
@@ -39,11 +33,8 @@ const profileLinks = [
 const Navbar = () => {
   const {
     cartCount,
-    activeRole,
     currentUser,
-    dashboardMap,
     logout,
-    setRole,
     theme,
     toggleTheme,
     wishlist,
@@ -51,18 +42,16 @@ const Navbar = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
+
+  const isLoggedIn = Boolean(
+    currentUser?._id || currentUser?.id || currentUser?.email || (typeof localStorage !== "undefined" && localStorage.getItem("token"))
+  );
 
   // Close menus on route change
   useEffect(() => {
     setMobileOpen(false);
     setProfileOpen(false);
   }, [location.pathname, location.search]);
-
-  const handleDashboardAccess = (role) => {
-    setRole(role);
-    navigate(dashboardMap[role]);
-  };
 
   const navItemStyle = ({ isActive }) =>
     `relative rounded-full px-5 py-2 text-sm font-semibold transition-all duration-300 ${
@@ -152,7 +141,19 @@ const Navbar = () => {
                 {theme === "light" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
               </button>
 
+              {/* Login button (Customer / Vendor login page par jata hai) */}
+              {!isLoggedIn && (
+                <Link
+                  to="/login"
+                  className="flex items-center gap-2 rounded-full bg-primary-600 px-5 py-2.5 text-sm font-semibold text-white shadow-md transition hover:-translate-y-0.5 hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"
+                >
+                  <User className="h-4 w-4" />
+                  Login
+                </Link>
+              )}
+
               {/* Profile Dropdown */}
+              {isLoggedIn && (
               <div className="relative z-[80]">
                 <button
                   onClick={() => setProfileOpen((prev) => !prev)}
@@ -199,6 +200,7 @@ const Navbar = () => {
                   )}
                 </AnimatePresence>
               </div>
+              )}
             </div>
           </div>
 
@@ -253,22 +255,15 @@ const Navbar = () => {
 
               <div className="mb-4 h-px bg-slate-100 dark:bg-slate-800" />
 
-              <div className="grid gap-2 mb-4">
-                <p className="px-2 text-xs font-bold uppercase tracking-wider text-slate-400">Dashboards</p>
-                {dashboardLinks.map((item) => (
-                  <button
-                    key={item.role}
-                    onClick={() => handleDashboardAccess(item.role)}
-                    className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
-                      activeRole === item.role
-                        ? "border-primary-600 bg-primary-600 text-white shadow-md dark:border-primary-500 dark:bg-primary-500"
-                        : "border-slate-200 text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
-              </div>
+              {!isLoggedIn && (
+                <Link
+                  to="/login"
+                  className="mb-4 flex items-center justify-center gap-2 rounded-2xl bg-primary-600 px-4 py-3 text-sm font-semibold text-white shadow-md transition hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"
+                >
+                  <User className="h-4 w-4" />
+                  Login / Sign Up
+                </Link>
+              )}
 
               <div className="grid grid-cols-2 gap-2 mb-4">
                 {profileLinks.map((item) => (
@@ -298,6 +293,7 @@ const Navbar = () => {
                   {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
                   {theme === "light" ? "Dark" : "Light"}
                 </button>
+                {isLoggedIn ? (
                 <button
                   onClick={logout}
                   className="flex flex-1 items-center justify-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-600 transition hover:bg-rose-100 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-400 dark:hover:bg-rose-500/20"
@@ -305,6 +301,15 @@ const Navbar = () => {
                   <LogOut className="h-4 w-4" />
                   Logout
                 </button>
+                ) : (
+                <Link
+                  to="/login"
+                  className="flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600"
+                >
+                  <User className="h-4 w-4" />
+                  Login
+                </Link>
+                )}
               </div>
             </div>
           </motion.div>

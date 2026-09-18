@@ -97,14 +97,44 @@ const AuthPage = ({ adminOnly = false, initialMode = "login" }) => {
 
           <div className="mt-6 space-y-2">
             <h2 className="text-2xl font-bold text-secondary-900 dark:text-secondary-100">
-              {mode === "login" ? "Login to your account" : "Create your account"}
+              {adminOnly
+                ? mode === "login"
+                  ? "Admin Login"
+                  : "Register Admin"
+                : mode === "login"
+                  ? `Login as ${form.role === "vendor" ? "Vendor" : "Customer"}`
+                  : "Create your account"}
             </h2>
             <p className="text-sm text-secondary-600 dark:text-secondary-300">
-              {mode === "login"
-                ? "Enter your email and password to access your orders and wishlist."
-                : "Fill in your details to create a new customer account."}
+              {adminOnly
+                ? "Sign in with your administrator account to manage the store."
+                : mode === "login"
+                  ? "Choose your account type, then enter your email and password."
+                  : "Choose your account type and fill in your details to get started."}
             </p>
           </div>
+
+          {!adminOnly && (
+            <div className="mt-4 grid grid-cols-2 gap-2 rounded-2xl border border-secondary-200 bg-white p-1.5 dark:border-secondary-700 dark:bg-secondary-950">
+              {[
+                { value: "customer", label: "Customer" },
+                { value: "vendor", label: "Vendor" },
+              ].map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  onClick={() => setForm((previous) => ({ ...previous, role: item.value }))}
+                  className={`rounded-xl px-4 py-2.5 text-sm font-semibold transition ${
+                    form.role === item.value
+                      ? "bg-slate-900 text-white shadow dark:bg-primary-600"
+                      : "text-secondary-600 hover:bg-secondary-100 dark:text-secondary-300 dark:hover:bg-secondary-800"
+                  }`}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
 
           <form className="mt-6 space-y-4" onSubmit={submit}>
             {mode === "signup" && (
@@ -152,7 +182,6 @@ const AuthPage = ({ adminOnly = false, initialMode = "login" }) => {
                 <input required type="password" placeholder="Confirm your password" value={form.confirmPassword} onChange={update("confirmPassword")} className={inputClassName} />
               </label>
             )}
-            {mode === "signup" && !adminOnly && <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-200">Account type<select value={form.role} onChange={update("role")} className={`${inputClassName} mt-2`}><option value="customer">Customer</option><option value="vendor">Vendor</option></select></label>}
             {error && <p className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>}
 
             <button

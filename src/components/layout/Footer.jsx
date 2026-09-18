@@ -37,13 +37,13 @@ const Footer = () => (
 
         <div>
           <h4 className="text-sm font-semibold uppercase tracking-[0.22em] text-secondary-500 dark:text-secondary-300">
-            Dashboards
+            Support
           </h4>
           <div className="mt-3 grid gap-2 text-sm text-secondary-600 dark:text-secondary-300">
-            <Link to="/admin/dashboard">Admin</Link>
-            <Link to="/vendor/dashboard">Vendor</Link>
-            <Link to="/user/dashboard">Customer</Link>
             <Link to="/contact">Contact Us</Link>
+            <Link to="/about">About Us</Link>
+            <Link to="/blog">Blog</Link>
+            <Link to="/customer">Customer Care</Link>
           </div>
         </div>
 
