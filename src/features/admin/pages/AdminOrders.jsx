@@ -4,15 +4,12 @@ import Button from "../../../components/common/Button";
 import Card from "../../../components/common/Card";
 import Modal from "../../../components/common/Modal";
 import Table from "../../../components/common/Table";
-import { api } from "../../../lib/api";
+import { api, apiRaw, resolveImage, toQuery } from "../../../lib/api";
 import { StatusBadge, panelClass } from "../shared/adminShared";
 
-const getImageUrl = (img) => {
-  if (!img) return "/logo.jpg";
-  if (img.startsWith("http://") || img.startsWith("https://") || img.startsWith("data:")) return img;
-  const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace("/api", "") : "http://localhost:3000";
-  return `${baseUrl}${img}`;
-};
+const getImageUrl = (img) => resolveImage(img);
+
+const ALL_STATUSES = ["Pending", "Confirmed", "Processing", "Shipped", "Delivered", "Cancelled", "Returned"];
 
 export const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -21,12 +18,21 @@ export const AdminOrders = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [viewingOrder, setViewingOrder] = useState(null);
+  const [pagination, setPagination] = useState({ total: 0, page: 1, pages: 1 });
+  const [page, setPage] = useState(1);
+
+  const formatAddress = (addr) => {
+    if (!addr) return "—";
+    if (typeof addr === "string") return addr;
+    return [addr.line1, addr.line2, addr.city, addr.state, addr.postalCode, addr.country].filter(Boolean).join(", ");
+  };
 
   const loadOrders = async () => {
     setLoading(true);
     try {
-      const data = await api("/admin/orders");
-      setOrders(data || []);
+      const body = await apiRaw(`/admin/orders${toQuery({ status: statusFilter === "all" ? "" : statusFilter, page, limit: 20 })}`);
+      setOrders(body.data || []);
+      setPagination(body.pagination || { total: (body.data || []).length, page: 1, pages: 1 });
     } catch (e) {
       setError(e.message);
     } finally {
@@ -36,7 +42,7 @@ export const AdminOrders = () => {
 
   useEffect(() => {
     loadOrders();
-  }, []);
+  }, [statusFilter, page]);
 
   const handleStatusChange = async (orderId, newStatus) => {
     try {
@@ -51,19 +57,15 @@ export const AdminOrders = () => {
   };
 
   const filteredOrders = useMemo(() => {
-    return orders.filter((order) => {
-      const query = searchTerm.trim().toLowerCase();
-      const matchesSearch =
-        query.length === 0 ||
-        (order._id && order._id.toLowerCase().includes(query)) ||
-        (order.customerName && order.customerName.toLowerCase().includes(query)) ||
-        (order.customerMobile && order.customerMobile.toLowerCase().includes(query)) ||
-        (order.customerEmail && order.customerEmail.toLowerCase().includes(query));
-
-      const matchesStatus = statusFilter === "all" || order.status === statusFilter;
-      return matchesSearch && matchesStatus;
-    });
-  }, [orders, searchTerm, statusFilter]);
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return orders;
+    return orders.filter((order) =>
+      (order._id && order._id.toLowerCase().includes(query)) ||
+      (order.customerName && order.customerName.toLowerCase().includes(query)) ||
+      (order.customerMobile && order.customerMobile.toLowerCase().includes(query)) ||
+      (order.customerEmail && order.customerEmail.toLowerCase().includes(query))
+    );
+  }, [orders, searchTerm]);
 
   const orderStats = useMemo(() => {
     const total = filteredOrders.length;
@@ -89,8 +91,8 @@ export const AdminOrders = () => {
       <p className="font-bold text-slate-900 dark:text-slate-100">{order.customerName}</p>
       <p className="text-xs text-slate-600 dark:text-slate-300">📞 {order.customerMobile}</p>
       {order.customerEmail && <p className="text-xs text-slate-500">{order.customerEmail}</p>}
-      <p className="text-xs text-slate-500 truncate max-w-[180px]" title={order.shippingAddress}>
-        📍 {order.shippingAddress}
+      <p className="text-xs text-slate-500 truncate max-w-[180px]" title={formatAddress(order.shippingAddress)}>
+        📍 {formatAddress(order.shippingAddress)}
       </p>
     </div>,
     <div key={`items-${order._id}`} className="space-y-1">
@@ -120,11 +122,9 @@ export const AdminOrders = () => {
       onChange={(e) => handleStatusChange(order._id, e.target.value)}
       className="rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-semibold text-slate-800 outline-none focus:border-primary-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-200"
     >
-      <option value="Pending">Pending</option>
-      <option value="Processing">Processing</option>
-      <option value="Shipped">Shipped</option>
-      <option value="Delivered">Delivered</option>
-      <option value="Cancelled">Cancelled</option>
+      {ALL_STATUSES.map((s) => (
+        <option key={s} value={s}>{s}</option>
+      ))}
     </select>,
     <div key={`act-${order._id}`}>
       <Button
@@ -159,15 +159,13 @@ export const AdminOrders = () => {
         />
         <select
           value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
+          onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
           className="rounded-xl border border-slate-300/80 bg-white px-3 py-2 text-sm outline-none focus:border-primary-500 dark:border-slate-700/80 dark:bg-slate-900"
         >
           <option value="all">All Statuses</option>
-          <option value="Pending">Pending</option>
-          <option value="Processing">Processing</option>
-          <option value="Shipped">Shipped</option>
-          <option value="Delivered">Delivered</option>
-          <option value="Cancelled">Cancelled</option>
+          {ALL_STATUSES.map((s) => (
+            <option key={s} value={s}>{s}</option>
+          ))}
         </select>
         <Button
           variant="secondary"
@@ -209,7 +207,16 @@ export const AdminOrders = () => {
       {loading ? (
         <p className="text-center py-8 text-slate-500">Loading orders...</p>
       ) : (
-        <Table headers={headers} rows={rows} emptyMessage="No orders found." />
+        <>
+          <Table headers={headers} rows={rows} emptyMessage="No orders found." />
+          {pagination.pages > 1 && (
+            <div className="flex items-center justify-center gap-2">
+              <Button variant="ghost" disabled={page <= 1} onClick={() => setPage((p) => p - 1)}>Previous</Button>
+              <span className="text-sm text-slate-500">Page {pagination.page} of {pagination.pages}</span>
+              <Button variant="ghost" disabled={!pagination.hasNext} onClick={() => setPage((p) => p + 1)}>Next</Button>
+            </div>
+          )}
+        </>
       )}
 
       {/* View Order Modal */}
@@ -226,7 +233,7 @@ export const AdminOrders = () => {
               <p><span className="font-semibold">Name:</span> {viewingOrder.customerName}</p>
               <p><span className="font-semibold">Mobile:</span> {viewingOrder.customerMobile}</p>
               {viewingOrder.customerEmail && <p><span className="font-semibold">Email:</span> {viewingOrder.customerEmail}</p>}
-              <p><span className="font-semibold">Shipping Address:</span> {viewingOrder.shippingAddress}</p>
+              <p><span className="font-semibold">Shipping Address:</span> {formatAddress(viewingOrder.shippingAddress)}</p>
             </div>
 
             <div>

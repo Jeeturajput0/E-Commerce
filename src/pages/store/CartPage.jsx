@@ -19,7 +19,30 @@ const CartPage = () => {
     customerMobile: "",
     customerEmail: "",
     shippingAddress: "",
+    paymentMethod: "COD",
+    couponCode: "",
   });
+  const [coupon, setCoupon] = useState(null);
+  const [couponError, setCouponError] = useState("");
+
+  const applyCoupon = async () => {
+    setCouponError("");
+    if (!form.couponCode.trim()) {
+      setCoupon(null);
+      return;
+    }
+    try {
+      const data = await api("/coupons/validate", {
+        method: "POST",
+        body: JSON.stringify({ code: form.couponCode, subtotal: cartTotal }),
+      });
+      setCoupon(data);
+      addToast(`Coupon applied: -$${data.discount}`);
+    } catch (err) {
+      setCoupon(null);
+      setCouponError(err.message);
+    }
+  };
 
   const handleChange = (e) => {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -48,8 +71,8 @@ const CartPage = () => {
         customerEmail: form.customerEmail,
         shippingAddress: form.shippingAddress,
         items,
-        totalAmount: cartTotal + 12,
-        paymentMethod: "COD",
+        paymentMethod: form.paymentMethod,
+        couponCode: coupon?.code || form.couponCode || "",
       };
 
       const res = await api("/orders", {
@@ -59,8 +82,9 @@ const CartPage = () => {
 
       setSuccessOrder(res);
       clearCart();
+      setCoupon(null);
       setCheckoutOpen(false);
-      addToast("Cash on Delivery order placed successfully!");
+      addToast("Order placed successfully!");
     } catch (err) {
       addToast(err.message || "Failed to place order", "warning");
     } finally {
@@ -118,17 +142,34 @@ const CartPage = () => {
                 <span>Subtotal</span>
                 <span>${cartTotal.toFixed(2)}</span>
               </div>
+              {coupon && (
+                <div className="flex items-center justify-between text-emerald-600">
+                  <span>Coupon ({coupon.code})</span>
+                  <span>-${coupon.discount.toFixed(2)}</span>
+                </div>
+              )}
               <div className="flex items-center justify-between">
                 <span>Shipping</span>
-                <span>$12.00</span>
+                <span>{cartTotal - (coupon?.discount || 0) >= 999 ? "Free" : "$49.00"}</span>
               </div>
               <div className="flex items-center justify-between border-t border-slate-200 pt-2 text-base font-semibold dark:border-slate-700">
                 <span>Total</span>
-                <span>${(cartTotal + 12).toFixed(2)}</span>
+                <span>Server-verified at checkout</span>
               </div>
             </div>
+            <div className="mt-4 flex gap-2">
+              <input
+                value={form.couponCode}
+                name="couponCode"
+                onChange={handleChange}
+                placeholder="Coupon code"
+                className="w-full rounded-xl border p-2.5 text-sm uppercase outline-none focus:border-primary-500"
+              />
+              <Button type="button" variant="secondary" onClick={applyCoupon}>Apply</Button>
+            </div>
+            {couponError && <p className="mt-2 text-xs text-rose-600">{couponError}</p>}
             <Button className="mt-5 w-full" onClick={() => setCheckoutOpen(true)}>
-              Proceed to Checkout (COD)
+              Proceed to Checkout
             </Button>
           </aside>
         </div>
@@ -196,12 +237,30 @@ const CartPage = () => {
               />
             </label>
 
-            <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3 text-sm flex justify-between items-center">
-              <div>
-                <p className="font-semibold">Payment Method</p>
-                <p className="text-xs text-slate-500">Pay cash upon delivery</p>
+            <div className="rounded-xl bg-slate-100 dark:bg-slate-800 p-3 text-sm space-y-3">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-semibold">Payment Method</p>
+                  <p className="text-xs text-slate-500">COD pays cash on delivery</p>
+                </div>
+                <select
+                  name="paymentMethod"
+                  value={form.paymentMethod}
+                  onChange={handleChange}
+                  className="rounded-xl border bg-white px-3 py-2 text-sm dark:bg-slate-900"
+                >
+                  <option value="COD">Cash on Delivery</option>
+                  <option value="UPI">UPI</option>
+                  <option value="Card">Card</option>
+                  <option value="NetBanking">NetBanking</option>
+                  <option value="Wallet">Wallet</option>
+                </select>
               </div>
-              <span className="font-bold text-primary-600">Cash on Delivery</span>
+              {coupon && (
+                <p className="text-xs font-semibold text-emerald-600">
+                  Coupon {coupon.code} applied (−${coupon.discount}). Final total is verified by the server.
+                </p>
+              )}
             </div>
 
             <div className="flex justify-end gap-3 pt-2 border-t">
@@ -209,7 +268,7 @@ const CartPage = () => {
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>
-                {loading ? "Placing Order..." : `Confirm Order ($${(cartTotal + 12).toFixed(2)})`}
+                {loading ? "Placing Order..." : "Confirm Order"}
               </Button>
             </div>
           </form>

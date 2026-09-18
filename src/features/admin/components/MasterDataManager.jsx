@@ -4,15 +4,10 @@ import { useNavigate } from "react-router-dom";
 import Button from "../../../components/common/Button";
 import Modal from "../../../components/common/Modal";
 import Table from "../../../components/common/Table";
-import { api } from "../../../lib/api";
+import { api, resolveImage } from "../../../lib/api";
 import { StatusBadge } from "../shared/adminShared";
 
-const getImageUrl = (img) => {
-  if (!img) return "/logo.jpg";
-  if (img.startsWith("http://") || img.startsWith("https://") || img.startsWith("data:")) return img;
-  const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace("/api", "") : "http://localhost:3000";
-  return `${baseUrl}${img}`;
-};
+const getImageUrl = (img) => resolveImage(img);
 
 export const masterConfigs = {
   category: {
@@ -61,8 +56,11 @@ export const masterConfigs = {
     title: "Coupons",
     fields: [
       ["code", "Coupon code"],
+      ["description", "Description"],
       ["discountValue", "Discount value", "number"],
-      ["minimumAmount", "Minimum amount", "number"],
+      ["minimumAmount", "Minimum order amount", "number"],
+      ["maximumDiscount", "Maximum discount cap", "number"],
+      ["usageLimit", "Usage limit (0 = unlimited)", "number"],
       ["expiryDate", "Expiry date", "date"],
     ],
     active: true,

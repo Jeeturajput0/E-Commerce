@@ -1,8 +1,16 @@
 const multer = require("multer");
-const path = require("path");
-const storage = multer.diskStorage({
-  destination: path.join(__dirname, "..", "uploads"),
-  filename: (req, file, done) => done(null, `${Date.now()}-${Math.round(Math.random() * 1e9)}${path.extname(file.originalname)}`),
+
+// Memory storage: files are forwarded to ImageKit, never written to disk.
+// (Legacy disk-based /uploads flow removed; static /uploads serving removed in server.js.)
+const storage = multer.memoryStorage();
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024, files: 8 },
+  fileFilter: (req, file, done) => {
+    if (file.mimetype && file.mimetype.startsWith("image/")) return done(null, true);
+    done(new Error("Only image files are allowed"), false);
+  },
 });
-const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: (req, file, done) => done(null, file.mimetype.startsWith("image/")) });
+
 module.exports = upload;

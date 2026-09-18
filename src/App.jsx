@@ -140,6 +140,7 @@ const App = () => {
         </Route>
         </Route>
 
+        <Route element={<RoleRoute role="customer" />}>
         <Route path="/user/dashboard" element={<CustomerDashboardLayout />}>
           <Route index element={<CustomerOverview />} />
           <Route path="orders" element={<CustomerOrders />} />
@@ -150,6 +151,7 @@ const App = () => {
           <Route path="profile" element={<CustomerProfile />} />
           <Route path="settings" element={<CustomerSettings />} />
           <Route path="*" element={<Navigate to="/user/dashboard" replace />} />
+        </Route>
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

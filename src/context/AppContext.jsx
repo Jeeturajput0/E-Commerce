@@ -40,13 +40,38 @@ export const AppProvider = ({ children }) => {
   }, [theme]);
 
   useEffect(() => {
-    const normalizeProduct = (item) => ({ ...item, id: item._id, title: item.name, price: item.saleprice, stock: item.quantity, description: item.details, images: item.image ? [item.image] : [], category: item.category?.name || "", rating: 0 });
-    Promise.all([api("/products"), fetch(`${import.meta.env.VITE_API_URL || "http://localhost:3000/api"}/categories`).then((r) => r.json())])
-      .then(([productData, categoryResponse]) => { setProducts(productData.map(normalizeProduct)); setCategories((categoryResponse.data || []).map((item) => ({ ...item, id: item._id, count: 0 }))); })
+    const normalizeProduct = (item) => ({
+      ...item,
+      id: item._id,
+      title: item.name,
+      price: item.saleprice,
+      stock: item.quantity ?? item.stock,
+      description: item.details || item.shortDescription || "",
+      images: Array.isArray(item.images) && item.images.length
+        ? item.images.map((img) => (typeof img === "string" ? img : img.url))
+        : item.image
+          ? [item.image]
+          : [],
+      category: item.category?.name || "",
+      rating: item.rating || 0,
+    });
+    Promise.all([api("/products"), api("/categories")])
+      .then(([productData, categoryData]) => {
+        const products = productData.data || productData;
+        const cats = categoryData.data || categoryData;
+        setProducts((products || []).map(normalizeProduct));
+        setCategories(((cats || [])).map((item) => ({ ...item, id: item._id, count: item.productCount || 0 })));
+      })
       .catch(() => { setProducts([]); setCategories([]); });
   }, []);
 
   const currentUser = useMemo(() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("userdetails") || "null");
+      if (stored?._id || stored?.id || stored?.email) return stored;
+    } catch {
+      // fall through to role-based lookup
+    }
     if (activeRole === "admin") return users.find((user) => user.role === "admin");
     if (activeRole === "vendor") {
       return (
@@ -84,7 +109,12 @@ export const AppProvider = ({ children }) => {
   };
 
   const logout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    localStorage.removeItem("userdetails");
     setActiveRole("customer");
+    setCart([]);
+    setWishlist([]);
     addToast("Logged out", "warning");
   };
 
@@ -101,9 +131,7 @@ export const AppProvider = ({ children }) => {
         images:
           payload.images?.length > 0
             ? payload.images
-            : [
-                "https://images.unsplash.com/photo-1560393464-5c69a73c5770?auto=format&fit=crop&w=1200&q=80",
-              ],
+            : ["/logo.jpg"],
       },
     ]);
     addToast("Product created successfully");

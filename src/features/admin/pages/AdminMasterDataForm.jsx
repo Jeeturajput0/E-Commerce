@@ -3,14 +3,16 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Button from "../../../components/common/Button";
 import Card from "../../../components/common/Card";
-import { api } from "../../../lib/api";
+import ImageUploader from "../../../components/common/ImageUploader";
+import { api, resolveImage } from "../../../lib/api";
+import { FOLDERS } from "../../../services/upload.service";
 import { masterBase, masterConfigs } from "../components/MasterDataManager";
 const AdminMasterDataForm = () => {
   const { resource, id } = useParams();
   const config = masterConfigs[resource];
   const navigate = useNavigate();
   const [form, setForm] = useState(masterBase(resource)),
-    [file, setFile] = useState(null),
+    [images, setImages] = useState([]),
     [categories, setCategories] = useState([]),
     [loading, setLoading] = useState(Boolean(id)),
     [error, setError] = useState("");
@@ -29,6 +31,7 @@ const AdminMasterDataForm = () => {
             startDate: item.startDate?.slice(0, 10) || "",
             endDate: item.endDate?.slice(0, 10) || "",
           });
+          if (item.image) setImages([{ url: item.image, fileId: item.imageFileId || "" }]);
         }
       } catch (e) {
         setError(e.message);
@@ -38,27 +41,22 @@ const AdminMasterDataForm = () => {
     })();
   }, [resource, id]);
   if (!config) return <p>Unknown management page.</p>;
+  const hasImageField = config.fields.some(([key]) => key === "image");
   const save = async (e) => {
     e.preventDefault();
     try {
       const payload = { ...form };
-      ["discount", "discountValue", "minimumAmount"].forEach((key) => {
-        if (payload[key] !== undefined) payload[key] = Number(payload[key]);
+      ["discount", "discountValue", "minimumAmount", "maximumDiscount", "usageLimit"].forEach((key) => {
+        if (payload[key] !== undefined && payload[key] !== "") payload[key] = Number(payload[key]);
       });
-      const body = new FormData();
-      Object.entries(payload).forEach(([k, v]) => {
-        if (Array.isArray(v)) {
-          v.forEach((val) => body.append(k, val));
-        } else if (v !== undefined && v !== null) {
-          body.append(k, v);
-        }
-      });
-      if (file) {
-        body.set("image", file);
+      if (hasImageField && images.length) {
+        payload.imageUrl = images[0].url;
+        payload.imageFileId = images[0].fileId || "";
+        payload.imageFilePath = images[0].filePath || "";
       }
       await api(id ? `/admin/${resource}/${id}` : `/admin/${resource}`, {
         method: id ? "PUT" : "POST",
-        body,
+        body: JSON.stringify(payload),
       });
       navigate(`/admin/dashboard/${resource}`);
     } catch (x) {
@@ -106,17 +104,15 @@ const AdminMasterDataForm = () => {
                 />
               ) : key === "image" ? (
                 <div>
-                  <input
-                    accept="image/*"
-                    type="file"
-                    onChange={(e) => setFile(e.target.files[0] || null)}
-                    className="w-full rounded-xl border border-slate-200 p-3 font-normal outline-none focus:border-primary-500"
+                  <ImageUploader
+                    value={images}
+                    onChange={setImages}
+                    folder={resource === "banner" ? FOLDERS.banners : resource === "category" ? FOLDERS.categories : FOLDERS.brands}
+                    multiple={false}
+                    maxFiles={1}
+                    label={label}
                   />
-                  {file ? (
-                    <p className="mt-1 text-xs font-normal text-slate-500">
-                      Selected file: {file.name}
-                    </p>
-                  ) : form.image ? (
+                  {!images.length && form.image ? (
                     <p className="mt-1 text-xs font-normal text-slate-500">
                       Current image: {form.image}
                     </p>

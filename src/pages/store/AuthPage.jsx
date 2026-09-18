@@ -14,15 +14,20 @@ const inputClassName =
 
 const AuthPage = ({ adminOnly = false, initialMode = "login" }) => {
   const [mode, setMode] = useState(initialMode);
-  const [form, setForm] = useState({ name: "", email: "", mobile: "", password: "", role: "customer" });
+  const [form, setForm] = useState({ name: "", email: "", mobile: "", password: "", confirmPassword: "", role: "customer" });
   const [error, setError] = useState("");
   const navigate = useNavigate();
   const update = (key) => (event) => setForm((previous) => ({ ...previous, [key]: event.target.value }));
   const submit = async (event) => {
     event.preventDefault(); setError("");
+    if (mode === "signup" && form.confirmPassword !== undefined && form.password !== form.confirmPassword) {
+      setError("Passwords do not match");
+      return;
+    }
     try {
       const endpoint = mode === "login" ? "/user/login" : adminOnly ? "/user/admin/register" : "/user/register";
-      const data = await api(endpoint, { method: "POST", body: JSON.stringify(form) });
+      const { confirmPassword: _confirm, ...payload } = form;
+      const data = await api(endpoint, { method: "POST", body: JSON.stringify(payload), skipAuthRedirect: true });
       if (adminOnly && data.user.role !== "admin") { localStorage.removeItem("token"); localStorage.removeItem("role"); throw new Error("Use an administrator account on this page"); }
       if (mode === "signup") { navigate(adminOnly ? "/admin/login" : "/login", { state: { message: "Registration successful. Please login to continue." } }); return; }
       localStorage.setItem("token", data.token); localStorage.setItem("role", data.user.role); localStorage.setItem("userdetails", JSON.stringify(data.user));
@@ -144,7 +149,7 @@ const AuthPage = ({ adminOnly = false, initialMode = "login" }) => {
                   <LockKeyhole className="h-4 w-4" />
                   Confirm Password
                 </span>
-                <input type="password" placeholder="Confirm your password" className={inputClassName} />
+                <input required type="password" placeholder="Confirm your password" value={form.confirmPassword} onChange={update("confirmPassword")} className={inputClassName} />
               </label>
             )}
             {mode === "signup" && !adminOnly && <label className="block text-sm font-medium text-secondary-700 dark:text-secondary-200">Account type<select value={form.role} onChange={update("role")} className={`${inputClassName} mt-2`}><option value="customer">Customer</option><option value="vendor">Vendor</option></select></label>}
