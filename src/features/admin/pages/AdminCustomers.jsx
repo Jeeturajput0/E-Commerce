@@ -1,5 +1,7 @@
+import { Eye, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "../../../components/common/Button";
+import IconButton from "../../../components/common/IconButton";
 import Card from "../../../components/common/Card";
 import Table from "../../../components/common/Table";
 import { api, apiRaw, toQuery } from "../../../lib/api";
@@ -77,12 +79,16 @@ export const AdminCustomers = () => {
     <span key={`customer-status-${customer._id}`} className={`rounded-full px-3 py-1 text-xs font-semibold ${customer.isActive ? "bg-green-100 text-green-700" : "bg-rose-100 text-rose-700"}`}>
       {customer.isActive ? "Active" : "Blocked"}
     </span>,
-    <div key={`customer-actions-${customer._id}`} className="flex flex-wrap gap-1">
-      <Button variant="secondary" className="px-2 py-1 text-xs" onClick={() => viewDetails(customer)}>View</Button>
+    <div key={`customer-actions-${customer._id}`} className="flex flex-wrap items-center gap-1.5">
+      <IconButton title="View details" onClick={() => viewDetails(customer)}>
+        <Eye className="h-4 w-4" />
+      </IconButton>
       <Button variant="ghost" className="px-2 py-1 text-xs" onClick={() => setActive(customer, !customer.isActive)}>
         {customer.isActive ? "Block" : "Activate"}
       </Button>
-      <Button variant="ghost" className="px-2 py-1 text-xs text-rose-600" onClick={() => remove(customer)}>Delete</Button>
+      <IconButton title="Delete customer" tone="danger" onClick={() => remove(customer)}>
+        <Trash2 className="h-4 w-4" />
+      </IconButton>
     </div>,
   ]);
 

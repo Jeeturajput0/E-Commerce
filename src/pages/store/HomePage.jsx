@@ -92,7 +92,13 @@ const stats = [
 
 const HomePage = () => {
   const { products, categories, testimonials } = useApp();
-  const featuredProducts = products.slice(0, 4);
+  const featuredProducts = products.slice(0, 8);
+  const electronicsProducts = products
+    .filter((product) => product.category === "Electronics")
+    .slice(0, 4);
+  const fashionProducts = products
+    .filter((product) => product.category === "Fashion")
+    .slice(0, 4);
   const spotlightCategories = categories.map((category, index) => ({
     ...category,
     ...categoryArt[index],
@@ -125,7 +131,80 @@ const HomePage = () => {
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
+        {products.length === 0 && (
+          <div className="rounded-3xl border border-dashed border-slate-300 p-10 text-center dark:border-slate-700">
+            <p className="font-semibold text-slate-700 dark:text-slate-200">
+              No products found
+            </p>
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+              Backend server start karo aur seed chalao taaki saare products yahan
+              dikhen: backend me <code>npm run seed</code>, phir frontend me products
+              automatically Home aur Shop dono par aa jayenge.
+            </p>
+            <Link
+              to="/shop"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-700 transition hover:text-primary-700 dark:text-slate-300 dark:hover:text-primary-300"
+            >
+              Go to Shop
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        )}
       </motion.section>
+
+      {electronicsProducts.length > 0 && (
+        <motion.section {...fadeUp} className="space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
+                Electronics
+              </p>
+              <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">
+                Latest gadgets & audio picks
+              </h2>
+            </div>
+            <Link
+              to="/categories/electronics"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 transition hover:text-primary-700 dark:text-slate-300 dark:hover:text-primary-300"
+            >
+              View all electronics
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            {electronicsProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </motion.section>
+      )}
+
+      {fashionProducts.length > 0 && (
+        <motion.section {...fadeUp} className="space-y-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-slate-500 dark:text-slate-400">
+                Fashion
+              </p>
+              <h2 className="mt-2 font-display text-3xl font-semibold sm:text-4xl">
+                Trending styles for everyone
+              </h2>
+            </div>
+            <Link
+              to="/categories/fashion"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-slate-700 transition hover:text-primary-700 dark:text-slate-300 dark:hover:text-primary-300"
+            >
+              View all fashion
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            {fashionProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </motion.section>
+      )}
 
       
 <CategorySection/>

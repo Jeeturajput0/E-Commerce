@@ -1,5 +1,7 @@
+import { Eye } from "lucide-react";
 import { useEffect, useState } from "react";
 import Button from "../../../components/common/Button";
+import IconButton from "../../../components/common/IconButton";
 import Card from "../../../components/common/Card";
 import Table from "../../../components/common/Table";
 import { api, apiRaw, toQuery } from "../../../lib/api";
@@ -87,8 +89,10 @@ export const AdminVendors = () => {
       <StatusBadge value={vendor.vendorStatus} />
       <StatusBadge value={vendor.isActive ? "Active" : "Blocked"} />
     </div>,
-    <div key={`actions-${vendor._id}`} className="flex flex-wrap gap-1">
-      <Button variant="secondary" className="px-2 py-1 text-xs" onClick={() => viewDetails(vendor)}>View</Button>
+    <div key={`actions-${vendor._id}`} className="flex flex-wrap items-center gap-1.5">
+      <IconButton title="View details" onClick={() => viewDetails(vendor)}>
+        <Eye className="h-4 w-4" />
+      </IconButton>
       {vendor.vendorStatus === "pending" && (
         <>
           <Button className="px-2 py-1 text-xs" onClick={() => setStatus(vendor, "approved")}>Approve</Button>

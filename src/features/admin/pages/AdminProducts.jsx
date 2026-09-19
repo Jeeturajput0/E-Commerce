@@ -1,7 +1,8 @@
-import { Eye } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/common/Button";
+import IconButton from "../../../components/common/IconButton";
 import Modal from "../../../components/common/Modal";
 import Table from "../../../components/common/Table";
 import { api, apiRaw, resolveImage, toQuery } from "../../../lib/api";
@@ -72,11 +73,10 @@ const AdminProducts = () => {
       <StatusBadge value={p.isActive ? "Active" : "Inactive"} />
       {p.featured && <StatusBadge value="Featured" />}
     </div>,
-    <div className="flex flex-wrap items-center gap-1" key={`${p._id}x`}>
-      <Button variant="secondary" className="flex items-center gap-1 px-2 py-1 text-xs" onClick={() => setViewingProduct(p)}>
-        <Eye className="h-3.5 w-3.5" />
-        View
-      </Button>
+    <div className="flex flex-wrap items-center gap-1.5" key={`${p._id}x`}>
+      <IconButton title="View details" onClick={() => setViewingProduct(p)}>
+        <Eye className="h-4 w-4" />
+      </IconButton>
       {p.approvalStatus !== "approved" && (
         <Button className="px-2 py-1 text-xs" onClick={() => action(`/admin/products/${p._id}/approve`)}>
           Approve
@@ -97,12 +97,12 @@ const AdminProducts = () => {
       <Button variant="ghost" className="px-2 py-1 text-xs" onClick={() => action(`/admin/products/${p._id}/toggle-active`, "PATCH")}>
         {p.isActive ? "Deactivate" : "Activate"}
       </Button>
-      <Button variant="ghost" className="px-2 py-1 text-xs" onClick={() => navigate(`/admin/dashboard/products/${p._id}/edit`)}>
-        Edit
-      </Button>
-      <Button variant="ghost" className="px-2 py-1 text-xs text-rose-600" onClick={() => { if (confirm("Delete this product?")) action(`/admin/products/${p._id}`, "DELETE"); }}>
-        Delete
-      </Button>
+      <IconButton title="Edit product" tone="primary" onClick={() => navigate(`/admin/dashboard/products/${p._id}/edit`)}>
+        <Pencil className="h-4 w-4" />
+      </IconButton>
+      <IconButton title="Delete product" tone="danger" onClick={() => { if (confirm("Delete this product?")) action(`/admin/products/${p._id}`, "DELETE"); }}>
+        <Trash2 className="h-4 w-4" />
+      </IconButton>
     </div>,
   ]);
 

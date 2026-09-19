@@ -1,7 +1,8 @@
-import { Eye } from "lucide-react";
+import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Button from "../../../components/common/Button";
+import IconButton from "../../../components/common/IconButton";
 import Modal from "../../../components/common/Modal";
 import Table from "../../../components/common/Table";
 import { api, resolveImage } from "../../../lib/api";
@@ -130,29 +131,27 @@ const MasterDataManager = ({ resource }) => {
         <span key={`cat-name-${item._id}`} className="font-semibold text-slate-900 dark:text-slate-100">
           {item.name}
         </span>,
-        <div key={`${item._id}-actions`} className="flex gap-2 items-center">
-          <Button
-            variant="secondary"
-            className="px-3 py-1 text-xs flex items-center gap-1"
+        <div key={`${item._id}-actions`} className="flex items-center gap-1.5">
+          <IconButton
+            title="View details"
             onClick={() => setViewingItem(item)}
           >
-            <Eye className="h-3.5 w-3.5" />
-            View
-          </Button>
-          <Button
-            variant="ghost"
-            className="px-3 py-1 text-xs"
+            <Eye className="h-4 w-4" />
+          </IconButton>
+          <IconButton
+            title="Edit item"
+            tone="primary"
             onClick={() => navigate(`/admin/dashboard/${resource}/${item._id}/edit`)}
           >
-            Edit
-          </Button>
-          <Button
-            variant="ghost"
-            className="px-3 py-1 text-xs text-rose-600"
+            <Pencil className="h-4 w-4" />
+          </IconButton>
+          <IconButton
+            title="Delete item"
+            tone="danger"
             onClick={() => remove(item._id)}
           >
-            Delete
-          </Button>
+            <Trash2 className="h-4 w-4" />
+          </IconButton>
         </div>,
       ];
     }
@@ -184,29 +183,27 @@ const MasterDataManager = ({ resource }) => {
             />,
           ]
         : []),
-      <div key={`${item._id}-actions`} className="flex gap-2 items-center">
-        <Button
-          variant="secondary"
-          className="px-3 py-1 text-xs flex items-center gap-1"
+      <div key={`${item._id}-actions`} className="flex items-center gap-1.5">
+        <IconButton
+          title="View details"
           onClick={() => setViewingItem(item)}
         >
-          <Eye className="h-3.5 w-3.5" />
-          View
-        </Button>
-        <Button
-          variant="secondary"
-          className="px-3 py-1 text-xs"
+          <Eye className="h-4 w-4" />
+        </IconButton>
+        <IconButton
+          title="Edit item"
+          tone="primary"
           onClick={() => navigate(`/admin/dashboard/${resource}/${item._id}/edit`)}
         >
-          Edit
-        </Button>
-        <Button
-          variant="ghost"
-          className="px-3 py-1 text-xs text-rose-600"
+          <Pencil className="h-4 w-4" />
+        </IconButton>
+        <IconButton
+          title="Delete item"
+          tone="danger"
           onClick={() => remove(item._id)}
         >
-          Delete
-        </Button>
+          <Trash2 className="h-4 w-4" />
+        </IconButton>
       </div>,
     ];
   });
