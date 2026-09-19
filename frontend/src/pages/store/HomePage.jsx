@@ -10,11 +10,13 @@ import {
   Truck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Button from "../../components/common/Button";
 import Card from "../../components/common/Card";
 import PageTransition from "../../components/common/PageTransition";
 import ProductCard from "../../components/store/ProductCard";
 import { useApp } from "../../context/AppContext";
+import { productService } from "../../services/api.services";
 import PromoSection from "../../features/store/components/PromoSection";
 import SliderHome from "./SliderHome";
 import CategoriesSection from "./CategoriesPage";
@@ -91,7 +93,48 @@ const stats = [
 ];
 
 const HomePage = () => {
-  const { products, categories, testimonials } = useApp();
+  const { products: ctxProducts, categories, testimonials } = useApp();
+  // Live products directly from backend — taaki admin dashboard se
+  // add kiya hua product turant Home par dikhe (context refresh ka wait na karna pade)
+  const [liveProducts, setLiveProducts] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const body = await productService.list({ limit: 20, sort: "newest" });
+        const list = body.data || body.items || [];
+        const normalized = list.map((item) => ({
+          ...item,
+          id: item._id,
+          title: item.name,
+          price: item.saleprice,
+          stock: item.quantity ?? item.stock,
+          description: item.details || item.shortDescription || "",
+          images:
+            Array.isArray(item.images) && item.images.length
+              ? item.images.map((i) => (typeof i === "string" ? i : i.url))
+              : item.image
+                ? [item.image]
+                : [],
+          category: item.category?.name || item.category || "",
+          rating: item.rating || 0,
+        }));
+        if (mounted) setLiveProducts(normalized);
+      } catch {
+        if (mounted) setLiveProducts([]);
+      } finally {
+        if (mounted) setLoadingProducts(false);
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  // Backend live data prefer karo, khaali ho to context fallback
+  const products = liveProducts.length > 0 ? liveProducts : ctxProducts;
   const featuredProducts = products.slice(0, 8);
   const electronicsProducts = products
     .filter((product) => product.category === "Electronics")
@@ -131,7 +174,14 @@ const HomePage = () => {
             <ProductCard key={product.id} product={product} />
           ))}
         </div>
-        {products.length === 0 && (
+        {loadingProducts && (
+          <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="h-72 animate-pulse rounded-3xl bg-slate-100 dark:bg-slate-800" />
+            ))}
+          </div>
+        )}
+        {!loadingProducts && products.length === 0 && (
           <div className="rounded-3xl border border-dashed border-slate-300 p-10 text-center dark:border-slate-700">
             <p className="font-semibold text-slate-700 dark:text-slate-200">
               No products found
