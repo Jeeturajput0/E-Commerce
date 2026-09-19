@@ -112,6 +112,7 @@ const App = () => {
           <Route path="reviews" element={<AdminReviews />} />
           <Route path="coupons" element={<AdminCoupons />} />
           <Route path="blog" element={<AdminOffers />} />
+          <Route path="offers" element={<AdminOffers />} />
           <Route path="colors" element={<AdminColors />} />
           <Route path="sizes" element={<AdminSizes />} />
           <Route path="banners" element={<AdminBanners />} />

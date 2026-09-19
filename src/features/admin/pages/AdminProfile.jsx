@@ -1,72 +1,101 @@
-import {
-  BadgePercent,
-  CreditCard,
-  DollarSign,
-  FileText,
-  Package,
-  Palette,
-  Ruler,
-  ShoppingCart,
-  Star,
-  Users,
-  UserSquare2,
-} from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "../../../components/common/Button";
-import Card from "../../../components/common/Card";
-import Modal from "../../../components/common/Modal";
-import Table from "../../../components/common/Table";
-import { useApp } from "../../../context/AppContext";
-import {
-  CategoryShareChart,
-  MetricCard,
-  OrdersPerformanceChart,
-  SalesTrendChart,
-  StatusBadge,
-  panelClass,
-} from "../shared/adminShared";
+import { api } from "../../../lib/api";
+import { authService } from "../../../services/api.services";
+import { panelClass } from "../shared/adminShared";
+
 export const AdminProfile = () => {
-  const { currentUser, updateCurrentUserProfile } = useApp();
-  const [form, setForm] = useState({
-    name: currentUser?.name || "",
-    email: currentUser?.email || "",
-    phone: currentUser?.phone || "+91 98765 43210",
-    designation: currentUser?.designation || "Super Manager",
-    department: currentUser?.department || "Operations",
-    location: currentUser?.location || "Mumbai, India",
-    accessLevel: currentUser?.accessLevel || "Full Admin Access",
-    bio: currentUser?.bio || "Managing platform operations, users, payments, and vendor growth.",
-  });
+  const [form, setForm] = useState({ name: "", email: "", mobile: "" });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    authService
+      .me()
+      .then((data) => {
+        const user = data?.data || data || {};
+        setForm({ name: user.name || "", email: user.email || "", mobile: user.mobile || "" });
+      })
+      .catch((e) => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const save = async (event) => {
+    event.preventDefault();
+    setError("");
+    setMessage("");
+    setSaving(true);
+    try {
+      const updated = await api("/user/profile", {
+        method: "PUT",
+        body: JSON.stringify({ name: form.name, mobile: form.mobile }),
+      });
+      const user = updated?.data || updated || {};
+      try {
+        const stored = JSON.parse(localStorage.getItem("userdetails") || "{}");
+        localStorage.setItem("userdetails", JSON.stringify({ ...stored, ...user }));
+      } catch {
+        // storage unavailable — ignore
+      }
+      setMessage("Profile updated successfully");
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
-      <h2 className="font-display text-2xl font-semibold text-primary-600">
-        Profile
-      </h2>
+      <div>
+        <h2 className="font-display text-2xl font-semibold text-primary-600">
+          Profile
+        </h2>
+        <p className="mt-1 text-sm text-slate-500">Your admin account details.</p>
+      </div>
       <div className={panelClass}>
-        <form
-          className="grid gap-3 sm:grid-cols-2"
-          onSubmit={(event) => {
-            event.preventDefault();
-            updateCurrentUserProfile(form);
-          }}
-        >
-          <input value={form.name} onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))} placeholder="Full name" className="rounded-xl border border-slate-300/80 bg-white px-3 py-2 text-sm dark:border-slate-700/80 dark:bg-slate-900" />
-          <input value={form.email} onChange={(event) => setForm((prev) => ({ ...prev, email: event.target.value }))} placeholder="Email" className="rounded-xl border border-slate-300/80 bg-white px-3 py-2 text-sm dark:border-slate-700/80 dark:bg-slate-900" />
-          <input value={form.phone} onChange={(event) => setForm((prev) => ({ ...prev, phone: event.target.value }))} placeholder="Phone" className="rounded-xl border border-slate-300/80 bg-white px-3 py-2 text-sm dark:border-slate-700/80 dark:bg-slate-900" />
-          <input value={form.designation} onChange={(event) => setForm((prev) => ({ ...prev, designation: event.target.value }))} placeholder="Designation" className="rounded-xl border border-slate-300/80 bg-white px-3 py-2 text-sm dark:border-slate-700/80 dark:bg-slate-900" />
-          <input value={form.department} onChange={(event) => setForm((prev) => ({ ...prev, department: event.target.value }))} placeholder="Department" className="rounded-xl border border-slate-300/80 bg-white px-3 py-2 text-sm dark:border-slate-700/80 dark:bg-slate-900" />
-          <input value={form.location} onChange={(event) => setForm((prev) => ({ ...prev, location: event.target.value }))} placeholder="Location" className="rounded-xl border border-slate-300/80 bg-white px-3 py-2 text-sm dark:border-slate-700/80 dark:bg-slate-900" />
-          <input value={form.accessLevel} onChange={(event) => setForm((prev) => ({ ...prev, accessLevel: event.target.value }))} placeholder="Access level" className="sm:col-span-2 rounded-xl border border-slate-300/80 bg-white px-3 py-2 text-sm dark:border-slate-700/80 dark:bg-slate-900" />
-          <textarea rows={4} value={form.bio} onChange={(event) => setForm((prev) => ({ ...prev, bio: event.target.value }))} placeholder="Short bio" className="sm:col-span-2 rounded-xl border border-slate-300/80 bg-white px-3 py-2 text-sm dark:border-slate-700/80 dark:bg-slate-900" />
-          <div className="sm:col-span-2 flex justify-end">
-            <Button type="submit">Save Profile</Button>
-          </div>
-        </form>
+        {loading ? (
+          <p className="text-sm text-slate-500">Loading profile...</p>
+        ) : (
+          <form className="grid gap-3 sm:grid-cols-2" onSubmit={save}>
+            {error && <p className="rounded-xl bg-rose-50 p-3 text-sm text-rose-700 sm:col-span-2">{error}</p>}
+            {message && <p className="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-700 sm:col-span-2">{message}</p>}
+            <label className="grid gap-1.5 text-sm font-semibold">
+              Full name
+              <input
+                value={form.name}
+                onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
+                placeholder="Full name"
+                className="rounded-xl border border-slate-300/80 bg-white px-3 py-2 font-normal dark:border-slate-700/80 dark:bg-slate-900"
+              />
+            </label>
+            <label className="grid gap-1.5 text-sm font-semibold">
+              Mobile
+              <input
+                value={form.mobile}
+                onChange={(event) => setForm((prev) => ({ ...prev, mobile: event.target.value }))}
+                placeholder="Mobile number"
+                className="rounded-xl border border-slate-300/80 bg-white px-3 py-2 font-normal dark:border-slate-700/80 dark:bg-slate-900"
+              />
+            </label>
+            <label className="grid gap-1.5 text-sm font-semibold sm:col-span-2">
+              Email (cannot be changed)
+              <input
+                value={form.email}
+                disabled
+                className="rounded-xl border border-slate-300/80 bg-slate-100 px-3 py-2 font-normal text-slate-500 dark:border-slate-700/80 dark:bg-slate-800"
+              />
+            </label>
+            <div className="sm:col-span-2 flex justify-end">
+              <Button type="submit" disabled={saving}>{saving ? "Saving..." : "Save Profile"}</Button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
 };
 
 export default AdminProfile;
-

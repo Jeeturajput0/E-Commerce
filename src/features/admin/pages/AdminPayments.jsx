@@ -1,93 +1,106 @@
-import {
-  BadgePercent,
-  CreditCard,
-  DollarSign,
-  FileText,
-  Package,
-  Palette,
-  Ruler,
-  ShoppingCart,
-  Star,
-  Users,
-  UserSquare2,
-} from "lucide-react";
-import { useMemo, useState } from "react";
-import Button from "../../../components/common/Button";
+import { useEffect, useMemo, useState } from "react";
 import Card from "../../../components/common/Card";
-import Modal from "../../../components/common/Modal";
 import Table from "../../../components/common/Table";
-import { useApp } from "../../../context/AppContext";
-import {
-  CategoryShareChart,
-  MetricCard,
-  OrdersPerformanceChart,
-  SalesTrendChart,
-  StatusBadge,
-  panelClass,
-} from "../shared/adminShared";
+import { api, apiRaw, toQuery } from "../../../lib/api";
+import { StatusBadge } from "../shared/adminShared";
+
+const PAYMENT_STATUSES = ["Pending", "Paid", "Failed"];
+
 export const AdminPayments = () => {
-  const { payments, orders, users, addPayment, updatePaymentStatus } = useApp();
-  const [form, setForm] = useState(() => ({
-    orderId: orders[0]?.id || "",
-    method: "Card",
-    gateway: "Stripe",
-    amount: orders[0]?.amount || 100,
-    status: "Pending",
-  }));
-  const selectedOrder = useMemo(
-    () => orders.find((order) => order.id === form.orderId) || null,
-    [orders, form.orderId],
-  );
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  const load = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const body = await apiRaw(`/admin/orders${toQuery({ limit: 50 })}`);
+      const list = body.data || [];
+      setOrders(Array.isArray(list) ? list : []);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  const updatePaymentStatus = async (orderId, paymentStatus) => {
+    try {
+      await api(`/admin/orders/${orderId}/status`, {
+        method: "PUT",
+        body: JSON.stringify({ paymentStatus }),
+      });
+      load();
+    } catch (e) {
+      setError(e.message);
+    }
+  };
 
   const totals = useMemo(() => {
-    const paid = payments
-      .filter((payment) => payment.status === "Paid")
-      .reduce((acc, payment) => acc + payment.amount, 0);
-    const pending = payments
-      .filter(
-        (payment) =>
-          payment.status === "Pending" || payment.status === "Processing",
-      )
-      .reduce((acc, payment) => acc + payment.amount, 0);
-    const failed = payments.filter(
-      (payment) => payment.status === "Failed",
-    ).length;
+    const paid = orders
+      .filter((o) => o.paymentStatus === "Paid")
+      .reduce((acc, o) => acc + (o.totalAmount || 0), 0);
+    const pending = orders
+      .filter((o) => o.paymentStatus === "Pending")
+      .reduce((acc, o) => acc + (o.totalAmount || 0), 0);
+    const failed = orders.filter((o) => o.paymentStatus === "Failed").length;
     return { paid, pending, failed };
-  }, [payments]);
+  }, [orders]);
 
-  const rows = payments.map((payment) => [
-    payment.id,
-    payment.orderId,
-    users.find((user) => user.id === payment.customerId)?.name || "Customer",
-    payment.method,
-    `$${payment.amount}`,
-    payment.gateway,
+  const visibleOrders =
+    statusFilter === "All" ? orders : orders.filter((o) => o.paymentStatus === statusFilter);
+
+  const rows = visibleOrders.map((order) => [
+    <div key={`id-${order._id}`}>
+      <p className="font-semibold text-slate-900 dark:text-slate-100">
+        #{String(order._id || "").slice(-6).toUpperCase()}
+      </p>
+      <p className="text-xs text-slate-500">
+        {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : ""}
+      </p>
+    </div>,
+    <span key={`cust-${order._id}`} className="text-sm">
+      {order.customerName || order.customer?.name || "Customer"}
+    </span>,
+    <span key={`method-${order._id}`} className="text-sm">
+      {order.paymentMethod || "COD"}
+    </span>,
+    <span key={`amt-${order._id}`} className="font-bold text-slate-900 dark:text-slate-100">
+      ${order.totalAmount || 0}
+    </span>,
+    <StatusBadge key={`stat-${order._id}`} value={order.paymentStatus || "Pending"} />,
     <select
-      key={`payment-status-${payment.id}`}
-      value={payment.status}
-      onChange={(event) => updatePaymentStatus(payment.id, event.target.value)}
+      key={`edit-${order._id}`}
+      value={order.paymentStatus || "Pending"}
+      onChange={(event) => updatePaymentStatus(order._id, event.target.value)}
       className="rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs dark:border-slate-700 dark:bg-slate-900"
     >
-      <option>Pending</option>
-      <option>Processing</option>
-      <option>Paid</option>
-      <option>Failed</option>
-      <option>Refunded</option>
+      {PAYMENT_STATUSES.map((s) => (
+        <option key={s} value={s}>{s}</option>
+      ))}
     </select>,
-    payment.paidOn,
   ]);
 
   return (
     <div className="space-y-4">
-      <h2 className="font-display text-2xl font-semibold text-primary-600">
-        Payment Management
-      </h2>
+      <div>
+        <h2 className="font-display text-2xl font-semibold text-primary-600">
+          Payment Management
+        </h2>
+        <p className="mt-1 text-sm text-slate-500">Live payment status of real customer orders.</p>
+      </div>
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
             Collected
           </p>
-          <p className="mt-2 text-3xl font-bold">
+          <p className="mt-2 text-3xl font-bold text-emerald-600">
             ${totals.paid.toLocaleString()}
           </p>
         </Card>
@@ -95,7 +108,7 @@ export const AdminPayments = () => {
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
             Pending
           </p>
-          <p className="mt-2 text-3xl font-bold">
+          <p className="mt-2 text-3xl font-bold text-amber-600">
             ${totals.pending.toLocaleString()}
           </p>
         </Card>
@@ -103,114 +116,38 @@ export const AdminPayments = () => {
           <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-300">
             Failed
           </p>
-          <p className="mt-2 text-3xl font-bold">{totals.failed}</p>
+          <p className="mt-2 text-3xl font-bold text-rose-600">{totals.failed}</p>
         </Card>
       </div>
 
-      <form
-        className="grid gap-3 rounded-2xl border border-slate-200/70 p-4 dark:border-slate-700/60 lg:grid-cols-[1.2fr_1fr_1fr_120px_120px_auto]"
-        onSubmit={(event) => {
-          event.preventDefault();
-          const fallbackCustomer = users.find(
-            (user) => user.role === "customer",
-          );
-          const fallbackVendor = users.find((user) => user.role === "vendor");
-          addPayment({
-            orderId:
-              form.orderId || `ORD-MANUAL-${Date.now().toString().slice(-4)}`,
-            customerId: selectedOrder?.customerId || fallbackCustomer?.id || 0,
-            vendorId: selectedOrder?.vendorId || fallbackVendor?.id || 0,
-            amount: Number(form.amount),
-            method: form.method,
-            gateway: form.gateway,
-            status: form.status,
-          });
-        }}
-      >
+      <div className="flex flex-wrap items-center gap-3">
+        <label className="text-sm font-semibold text-slate-600 dark:text-slate-300">
+          Filter by payment status:
+        </label>
         <select
-          value={form.orderId}
-          onChange={(event) => {
-            const nextOrder = orders.find(
-              (order) => order.id === event.target.value,
-            );
-            setForm((prev) => ({
-              ...prev,
-              orderId: event.target.value,
-              amount: nextOrder ? nextOrder.amount : prev.amount,
-            }));
-          }}
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
           className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
         >
-          {orders.map((order) => (
-            <option key={order.id} value={order.id}>
-              {order.id}
-            </option>
+          <option value="All">All</option>
+          {PAYMENT_STATUSES.map((s) => (
+            <option key={s} value={s}>{s}</option>
           ))}
         </select>
-        <select
-          value={form.method}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, method: event.target.value }))
-          }
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-        >
-          <option>Card</option>
-          <option>UPI</option>
-          <option>NetBanking</option>
-          <option>Wallet</option>
-        </select>
-        <select
-          value={form.gateway}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, gateway: event.target.value }))
-          }
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-        >
-          <option>Stripe</option>
-          <option>Razorpay</option>
-          <option>PayPal</option>
-        </select>
-        <input
-          type="number"
-          min={1}
-          value={form.amount}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, amount: Number(event.target.value) }))
-          }
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-        />
-        <select
-          value={form.status}
-          onChange={(event) =>
-            setForm((prev) => ({ ...prev, status: event.target.value }))
-          }
-          className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900"
-        >
-          <option>Pending</option>
-          <option>Processing</option>
-          <option>Paid</option>
-          <option>Failed</option>
-          <option>Refunded</option>
-        </select>
-        <Button type="submit">Add Payment</Button>
-      </form>
+      </div>
 
-      <Table
-        headers={[
-          "Payment ID",
-          "Order",
-          "Customer",
-          "Method",
-          "Amount",
-          "Gateway",
-          "Status",
-          "Date",
-        ]}
-        rows={rows}
-      />
+      {error && <p className="rounded-xl bg-rose-50 p-3 text-rose-700">{error}</p>}
+      {loading ? (
+        <p className="text-sm text-slate-500">Loading payments...</p>
+      ) : (
+        <Table
+          headers={["Order", "Customer", "Method", "Amount", "Status", "Update"]}
+          rows={rows}
+          emptyMessage="No orders yet."
+        />
+      )}
     </div>
   );
 };
 
 export default AdminPayments;
-

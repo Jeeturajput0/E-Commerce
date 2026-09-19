@@ -82,7 +82,7 @@ export const AdminOrders = () => {
 
   const rows = filteredOrders.map((order) => [
     <div key={`id-${order._id}`}>
-      <p className="font-semibold text-slate-900 dark:text-slate-100">#{order._id.slice(-6).toUpperCase()}</p>
+      <p className="font-semibold text-slate-900 dark:text-slate-100">#{String(order._id || "").slice(-6).toUpperCase()}</p>
       <p className="text-xs text-slate-500">
         {new Date(order.createdAt).toLocaleDateString()} {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
       </p>

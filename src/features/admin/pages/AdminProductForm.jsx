@@ -93,16 +93,31 @@ const AdminProductForm = () => {
     }
     setSaving(true);
     try {
+      const splitList = (value) =>
+        String(value || "")
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
       const payload = {
-        ...form,
+        name: form.name,
+        shortDescription: form.shortDescription,
+        details: form.details,
+        category: form.category,
+        subcategory: form.subcategory,
+        brand: form.brand || null,
+        size: form.size || null,
+        color: form.color || null,
         mrp: +form.mrp,
         saleprice: +form.saleprice,
         quantity: +form.quantity,
         stock: +form.quantity,
         price: +form.saleprice,
-        brand: form.brand || null,
-        size: form.size || null,
-        color: form.color || null,
+        sku: form.sku,
+        sizes: splitList(form.sizes),
+        colors: splitList(form.colors),
+        tags: splitList(form.tags),
+        featured: !!form.featured,
+        isActive: form.isActive !== false,
         images,
       };
       await api(id ? `/admin/products/${id}` : "/admin/products", {

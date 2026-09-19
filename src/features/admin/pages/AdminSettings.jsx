@@ -26,19 +26,41 @@ import {
   panelClass,
 } from "../shared/adminShared";
 export const AdminSettings = () => {
-  const [storeName, setStoreName] = useState("E-Commerces Admin");
-  const [supportEmail, setSupportEmail] = useState("support@ecommerces.io");
-  const [supportPhone, setSupportPhone] = useState("+91 98765 43210");
-  const [currency, setCurrency] = useState("USD");
-  const [timezone, setTimezone] = useState("Asia/Kolkata");
-  const [taxRate, setTaxRate] = useState(18);
-  const [shippingFee, setShippingFee] = useState(49);
-  const [allowCOD, setAllowCOD] = useState(true);
-  const [autoApproveVendors, setAutoApproveVendors] = useState(false);
-  const [lowStockAlert, setLowStockAlert] = useState(true);
-  const [orderAlerts, setOrderAlerts] = useState(true);
-  const [maintenanceMode, setMaintenanceMode] = useState(false);
-  const [twoFactorAdmin, setTwoFactorAdmin] = useState(true);
+  const loadSaved = () => {
+    try {
+      return JSON.parse(localStorage.getItem("admin-settings") || "{}");
+    } catch {
+      return {};
+    }
+  };
+  const saved = loadSaved();
+  const [storeName, setStoreName] = useState(saved.storeName || "E-Commerces Admin");
+  const [supportEmail, setSupportEmail] = useState(saved.supportEmail || "support@ecommerces.io");
+  const [supportPhone, setSupportPhone] = useState(saved.supportPhone || "+91 98765 43210");
+  const [currency, setCurrency] = useState(saved.currency || "USD");
+  const [timezone, setTimezone] = useState(saved.timezone || "Asia/Kolkata");
+  const [taxRate, setTaxRate] = useState(saved.taxRate ?? 18);
+  const [shippingFee, setShippingFee] = useState(saved.shippingFee ?? 49);
+  const [allowCOD, setAllowCOD] = useState(saved.allowCOD ?? true);
+  const [autoApproveVendors, setAutoApproveVendors] = useState(saved.autoApproveVendors ?? false);
+  const [lowStockAlert, setLowStockAlert] = useState(saved.lowStockAlert ?? true);
+  const [orderAlerts, setOrderAlerts] = useState(saved.orderAlerts ?? true);
+  const [maintenanceMode, setMaintenanceMode] = useState(saved.maintenanceMode ?? false);
+  const [twoFactorAdmin, setTwoFactorAdmin] = useState(saved.twoFactorAdmin ?? true);
+  const [savedMsg, setSavedMsg] = useState("");
+
+  const saveSettings = () => {
+    localStorage.setItem(
+      "admin-settings",
+      JSON.stringify({
+        storeName, supportEmail, supportPhone, currency, timezone, taxRate,
+        shippingFee, allowCOD, autoApproveVendors, lowStockAlert,
+        orderAlerts, maintenanceMode, twoFactorAdmin,
+      })
+    );
+    setSavedMsg("Settings saved successfully");
+    window.setTimeout(() => setSavedMsg(""), 2500);
+  };
 
   const fieldClass =
     "rounded-xl border border-slate-300/80 bg-white px-3 py-2 text-sm dark:border-slate-700/80 dark:bg-slate-900";
@@ -270,8 +292,9 @@ export const AdminSettings = () => {
             </div>
           </div>
 
-          <div className="flex justify-end">
-            <Button>Save Settings</Button>
+          <div className="flex items-center justify-end gap-3">
+            {savedMsg && <span className="text-sm font-semibold text-emerald-600">{savedMsg}</span>}
+            <Button onClick={saveSettings}>Save Settings</Button>
           </div>
         </div>
       </div>

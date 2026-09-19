@@ -6,10 +6,12 @@ import Card from "../../../components/common/Card";
 import ImageUploader from "../../../components/common/ImageUploader";
 import { api, resolveImage } from "../../../lib/api";
 import { FOLDERS } from "../../../services/upload.service";
-import { masterBase, masterConfigs } from "../components/MasterDataManager";
+import { masterBase, masterConfigs, masterListPath, toMasterKey } from "../components/MasterDataManager";
 const AdminMasterDataForm = () => {
   const { resource, id } = useParams();
-  const config = masterConfigs[resource];
+  const key = toMasterKey(resource);
+  const config = masterConfigs[key];
+  const listPath = `/admin/dashboard/${masterListPath[key] || key}`;
   const navigate = useNavigate();
   const [form, setForm] = useState(masterBase(resource)),
     [images, setImages] = useState([]),
@@ -20,11 +22,15 @@ const AdminMasterDataForm = () => {
     if (!config) return;
     (async () => {
       try {
-        if (config.categories) setCategories(await api("/admin/category"));
+        if (config.categories) {
+          const data = await api("/admin/category");
+          const list = data?.data || data?.items || data;
+          setCategories(Array.isArray(list) ? list : []);
+        }
         if (id) {
-          const item = await api(`/admin/${resource}/${id}`);
+          const item = await api(`/admin/${key}/${id}`);
           setForm({
-            ...masterBase(resource),
+            ...masterBase(key),
             ...item,
             categories: item.categories?.map((c) => c._id || c) || [],
             expiryDate: item.expiryDate?.slice(0, 10) || "",
@@ -40,7 +46,15 @@ const AdminMasterDataForm = () => {
       }
     })();
   }, [resource, id]);
-  if (!config) return <p>Unknown management page.</p>;
+  if (!config) {
+    return (
+      <div className="mx-auto max-w-3xl space-y-4">
+        <h2 className="font-display text-2xl font-semibold">Unknown management page</h2>
+        <p className="text-sm text-slate-500">No form found for "{resource}".</p>
+        <Button variant="secondary" onClick={() => navigate("/admin/dashboard")}>Back to dashboard</Button>
+      </div>
+    );
+  }
   const hasImageField = config.fields.some(([key]) => key === "image");
   const save = async (e) => {
     e.preventDefault();
@@ -54,11 +68,11 @@ const AdminMasterDataForm = () => {
         payload.imageFileId = images[0].fileId || "";
         payload.imageFilePath = images[0].filePath || "";
       }
-      await api(id ? `/admin/${resource}/${id}` : `/admin/${resource}`, {
+      await api(id ? `/admin/${key}/${id}` : `/admin/${key}`, {
         method: id ? "PUT" : "POST",
         body: JSON.stringify(payload),
       });
-      navigate(`/admin/dashboard/${resource}`);
+      navigate(listPath);
     } catch (x) {
       setError(x.message);
     }
@@ -68,7 +82,7 @@ const AdminMasterDataForm = () => {
     <div className="mx-auto max-w-3xl space-y-6">
       <button
         className="inline-flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-primary-600"
-        onClick={() => navigate(`/admin/dashboard/${resource}`)}
+        onClick={() => navigate(listPath)}
       >
         <ArrowLeft className="h-4 w-4" />
         Back to {config.title}
@@ -78,7 +92,7 @@ const AdminMasterDataForm = () => {
           Catalog & Content
         </p>
         <h2 className="mt-1 font-display text-3xl font-semibold text-slate-950">
-          {id ? "Edit" : "Add"} {config.title.slice(0, -1)}
+          {id ? "Edit" : "Add"} {config.singular}
         </h2>
         <p className="mt-2 text-slate-500">
           Fill in the details and save to update your database.
@@ -150,20 +164,20 @@ const AdminMasterDataForm = () => {
                 Assign categories
               </legend>
               <div className="mt-2 flex flex-wrap gap-4">
-                {categories.map((category) => (
+                {(categories || []).map((category) => (
                   <label
                     key={category._id}
                     className="inline-flex items-center gap-2 text-sm"
                   >
                     <input
                       type="checkbox"
-                      checked={form.categories.includes(category._id)}
+                      checked={(form.categories || []).includes(category._id)}
                       onChange={(e) =>
                         setForm({
                           ...form,
                           categories: e.target.checked
-                            ? [...form.categories, category._id]
-                            : form.categories.filter(
+                            ? [...(form.categories || []), category._id]
+                            : (form.categories || []).filter(
                                 (value) => value !== category._id,
                               ),
                         })
@@ -190,12 +204,12 @@ const AdminMasterDataForm = () => {
           <div className="flex justify-end gap-3 border-t pt-5">
             <Button
               variant="ghost"
-              onClick={() => navigate(`/admin/dashboard/${resource}`)}
+              onClick={() => navigate(listPath)}
             >
               Cancel
             </Button>
             <Button type="submit">
-              {id ? "Save changes" : `Add ${config.title.slice(0, -1)}`}
+              {id ? "Save changes" : `Add ${config.singular}`}
             </Button>
           </div>
         </form>

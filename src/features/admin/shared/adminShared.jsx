@@ -64,7 +64,7 @@ export const adminLinks = [
     group: "master",
   },
   {
-    path: "/admin/dashboard/blog",
+    path: "/admin/dashboard/offers",
     label: "Offers",
     icon: FileText,
     group: "master",
@@ -91,18 +91,21 @@ export const adminLinks = [
 ];
 
 const statusStyles = {
-  paid: "bg-primary-100 text-primary-700",
-  delivered: "bg-primary-100 text-primary-700",
-  active: "bg-primary-100 text-primary-700",
-  approved: "bg-primary-100 text-primary-700",
-  pending: "bg-primary-100 text-primary-700",
-  processing: "bg-primary-100 text-primary-700",
-  shipped: "bg-primary-100 text-primary-700",
-  failed: "bg-slate-200 text-slate-700",
-  cancelled: "bg-slate-200 text-slate-700",
-  expired: "bg-slate-200 text-slate-700",
-  inactive: "bg-slate-200 text-slate-700",
-  refunded: "bg-slate-200 text-slate-700",
+  paid: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+  delivered: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+  completed: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+  active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+  approved: "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
+  pending: "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
+  processing: "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300",
+  shipped: "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300",
+  featured: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
+  refunded: "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300",
+  failed: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300",
+  cancelled: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300",
+  rejected: "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300",
+  expired: "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300",
+  inactive: "bg-slate-200 text-slate-700 dark:bg-slate-700 dark:text-slate-300",
 };
 
 export const panelClass =
@@ -124,26 +127,29 @@ export const StatusBadge = ({ value }) => {
   );
 };
 
-export const MetricCard = ({ title, value, delta, icon: Icon }) => (
-  <div className={`${panelClass} p-5`}>
-    <div className="flex items-start justify-between">
-      <div>
-        <p className="text-[11px] uppercase tracking-wide text-primary-500">
-          {title}
-        </p>
-        <p className="mt-2 text-2xl font-bold text-primary-700 dark:text-primary-300">
-          {value}
-        </p>
-        <p className="mt-2 text-[11px] text-primary-600 dark:text-primary-300">
-          {delta}
-        </p>
+export const MetricCard = ({ title, value, delta, icon: Icon, accent }) => {
+  const gradient = accent || "from-primary-500 to-primary-700";
+  return (
+    <div className={`relative overflow-hidden rounded-2xl bg-gradient-to-br p-5 text-white shadow-lg ${gradient}`}>
+      <div className="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-white/15" />
+      <div className="absolute -bottom-8 -left-4 h-24 w-24 rounded-full bg-black/10" />
+      <div className="relative flex items-start justify-between gap-3">
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-white/80">
+            {title}
+          </p>
+          <p className="mt-2 text-2xl font-bold">{value}</p>
+          <p className="mt-2 text-[11px] text-white/75">{delta}</p>
+        </div>
+        {Icon && (
+          <span className="rounded-xl bg-white/20 p-2.5 backdrop-blur-sm">
+            <Icon className="h-5 w-5" />
+          </span>
+        )}
       </div>
-      <span className="rounded-xl bg-primary-100 p-2 text-primary-600">
-        <Icon className="h-4 w-4" />
-      </span>
     </div>
-  </div>
-);
+  );
+};
 
 export const SalesTrendChart = ({ data }) => {
   const width = 520;

@@ -41,8 +41,9 @@ export const AdminVendors = () => {
   const setStatus = async (vendor, vendorStatus) => {
     let reason = "";
     if (vendorStatus === "rejected") {
-      reason = prompt("Rejection reason") || "";
-      if (reason === null) return;
+      const input = prompt("Rejection reason");
+      if (input === null) return;
+      reason = input;
     }
     try {
       await api(`/admin/users/${vendor._id}`, { method: "PUT", body: JSON.stringify({ vendorStatus, vendorRejectionReason: reason }) });

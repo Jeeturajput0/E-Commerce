@@ -13,19 +13,26 @@ const getImageUrl = (img) => resolveImage(img);
 export const masterConfigs = {
   category: {
     title: "Categories",
+    singular: "Category",
     fields: [
       ["name", "Category name"],
+      ["description", "Description"],
       ["image", "Image"],
     ],
   },
   brand: {
     title: "Brands",
-    fields: [["name", "Brand name"]],
+    singular: "Brand",
+    fields: [
+      ["name", "Brand name"],
+      ["image", "Image"],
+    ],
     categories: true,
   },
-  size: { title: "Sizes", fields: [["name", "Size name"]], categories: true },
+  size: { title: "Sizes", singular: "Size", fields: [["name", "Size name"]], categories: true },
   color: {
     title: "Colors",
+    singular: "Color",
     fields: [
       ["name", "Color name"],
       ["hexCode", "Hex code"],
@@ -34,6 +41,7 @@ export const masterConfigs = {
   },
   banner: {
     title: "Banners",
+    singular: "Banner",
     fields: [
       ["title", "Title"],
       ["description", "Description"],
@@ -44,6 +52,7 @@ export const masterConfigs = {
   },
   offer: {
     title: "Offers",
+    singular: "Offer",
     fields: [
       ["title", "Title"],
       ["description", "Description"],
@@ -55,6 +64,7 @@ export const masterConfigs = {
   },
   coupon: {
     title: "Coupons",
+    singular: "Coupon",
     fields: [
       ["code", "Coupon code"],
       ["description", "Description"],
@@ -66,6 +76,34 @@ export const masterConfigs = {
     ],
     active: true,
   },
+};
+
+// Singular resource key -> plural dashboard path (sidebar + routes use plural)
+export const masterListPath = {
+  category: "categories",
+  brand: "brands",
+  size: "sizes",
+  color: "colors",
+  banner: "banners",
+  offer: "offers",
+  coupon: "coupons",
+};
+
+// Plural URL param (or legacy singular) -> singular resource key
+export const toMasterKey = (value = "") => {
+  const map = {
+    categories: "category",
+    brands: "brand",
+    sizes: "size",
+    colors: "color",
+    banners: "banner",
+    offers: "offer",
+    coupons: "coupon",
+    blog: "offer",
+  };
+  if (map[value]) return map[value];
+  if (masterConfigs[value]) return value;
+  return value.endsWith("s") ? value.slice(0, -1) : value;
 };
 
 export const masterBase = (resource) => ({
@@ -86,7 +124,8 @@ const MasterDataManager = ({ resource }) => {
     setLoading(true);
     try {
       const data = await api(`/admin/${resource}`);
-      setItems(data);
+      const list = data?.data || data?.items || data;
+      setItems(Array.isArray(list) ? list : []);
     } catch (e) {
       setError(e.message);
     } finally {
@@ -109,11 +148,21 @@ const MasterDataManager = ({ resource }) => {
   };
 
   const isCategory = resource === "category";
+  const listPath = `/admin/dashboard/${masterListPath[resource] || resource}`;
+
+  if (!config) {
+    return (
+      <div className="space-y-4">
+        <h2 className="font-display text-2xl font-semibold text-primary-600">Unknown page</h2>
+        <p className="text-sm text-slate-500">No management page found for "{resource}".</p>
+      </div>
+    );
+  }
 
   const headers = isCategory
-    ? ["Image", "Category Name", "Actions"]
+    ? ["Image", "Category Name", "Description", "Actions"]
     : [
-        resource === "color" ? "Color" : config.title.slice(0, -1),
+        resource === "color" ? "Color" : config.singular,
         ...(config.categories ? ["Categories"] : []),
         ...(config.active ? ["Status"] : []),
         "Actions",
@@ -131,6 +180,9 @@ const MasterDataManager = ({ resource }) => {
         <span key={`cat-name-${item._id}`} className="font-semibold text-slate-900 dark:text-slate-100">
           {item.name}
         </span>,
+        <span key={`cat-desc-${item._id}`} className="max-w-[260px] truncate text-sm text-slate-500" title={item.description || ""}>
+          {item.description || "—"}
+        </span>,
         <div key={`${item._id}-actions`} className="flex items-center gap-1.5">
           <IconButton
             title="View details"
@@ -141,7 +193,7 @@ const MasterDataManager = ({ resource }) => {
           <IconButton
             title="Edit item"
             tone="primary"
-            onClick={() => navigate(`/admin/dashboard/${resource}/${item._id}/edit`)}
+            onClick={() => navigate(`${listPath}/${item._id}/edit`)}
           >
             <Pencil className="h-4 w-4" />
           </IconButton>
@@ -190,11 +242,11 @@ const MasterDataManager = ({ resource }) => {
         >
           <Eye className="h-4 w-4" />
         </IconButton>
-        <IconButton
-          title="Edit item"
-          tone="primary"
-          onClick={() => navigate(`/admin/dashboard/${resource}/${item._id}/edit`)}
-        >
+          <IconButton
+            title="Edit item"
+            tone="primary"
+            onClick={() => navigate(`${listPath}/${item._id}/edit`)}
+          >
           <Pencil className="h-4 w-4" />
         </IconButton>
         <IconButton
@@ -219,8 +271,8 @@ const MasterDataManager = ({ resource }) => {
             Manage your {config.title.toLowerCase()}.
           </p>
         </div>
-        <Button onClick={() => navigate(`/admin/dashboard/${resource}/add`)}>
-          Add {config.title.slice(0, -1)}
+        <Button onClick={() => navigate(`${listPath}/add`)}>
+          Add {config.singular}
         </Button>
       </div>
       {error && (
@@ -238,30 +290,45 @@ const MasterDataManager = ({ resource }) => {
 
       {viewingItem && (
         <Modal
-          title={`${config.title.slice(0, -1)} Details`}
+          title={`${config.singular} Details`}
           description={`Viewing details for ${viewingItem.name || viewingItem.title || viewingItem.code}`}
           isOpen={Boolean(viewingItem)}
           onClose={() => setViewingItem(null)}
         >
           <div className="space-y-4 pt-2">
-            {(viewingItem.image || viewingItem.logo) && (
+            {viewingItem.image && (
               <div className="flex justify-center">
                 <img
-                  src={getImageUrl(viewingItem.image || viewingItem.logo)}
+                  src={getImageUrl(viewingItem.image)}
                   alt={viewingItem.name || viewingItem.title}
                   className="h-40 w-40 rounded-xl object-cover border"
                 />
               </div>
             )}
             <div className="space-y-2 text-sm">
-              {viewingItem.name && <p><span className="font-semibold">Name:</span> {viewingItem.name}</p>}
-              {viewingItem.title && <p><span className="font-semibold">Title:</span> {viewingItem.title}</p>}
-              {viewingItem.description && <p><span className="font-semibold">Description:</span> {viewingItem.description}</p>}
-              {viewingItem.code && <p><span className="font-semibold">Code:</span> {viewingItem.code}</p>}
+              {config.fields
+                .filter(([key]) => key !== "image")
+                .map(([key, label]) => {
+                  const raw = viewingItem[key];
+                  if (raw === undefined || raw === "" || raw === null) return null;
+                  const text = Array.isArray(raw) ? raw.map((c) => c?.name || c).join(", ") : String(raw);
+                  if (!text) return null;
+                  return (
+                    <p key={key}>
+                      <span className="font-semibold">{label}:</span> {text}
+                    </p>
+                  );
+                })}
               {viewingItem.categories && viewingItem.categories.length > 0 && (
                 <p>
                   <span className="font-semibold">Categories:</span>{" "}
                   {viewingItem.categories.map((c) => c.name || c).join(", ")}
+                </p>
+              )}
+              {viewingItem.isActive !== undefined && (
+                <p>
+                  <span className="font-semibold">Status:</span>{" "}
+                  <StatusBadge value={viewingItem.isActive ? "Active" : "Inactive"} />
                 </p>
               )}
             </div>
