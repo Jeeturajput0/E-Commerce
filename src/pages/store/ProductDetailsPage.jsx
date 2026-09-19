@@ -22,6 +22,8 @@ const ProductDetailsPage = () => {
   const [wishlisted, setWishlisted] = useState(false);
   const [reviewForm, setReviewForm] = useState({ rating: 5, comment: "" });
   const [reviewMsg, setReviewMsg] = useState("");
+  const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
 
   const resolvedId = id || productId;
 
@@ -34,6 +36,8 @@ const ProductDetailsPage = () => {
       .then((item) => {
         setProduct(item);
         setActiveImage(0);
+        setSelectedSize("");
+        setSelectedColor("");
         return productService.list({ category: item.category?._id || item.category, limit: 5 });
       })
       .then((body) => {
@@ -120,7 +124,46 @@ const ProductDetailsPage = () => {
       ? [product.image]
       : ["/logo.jpg"];
   const cartId = product._id;
-  const inStock = (product.stock ?? product.quantity ?? 0) > 0;
+  // ---- variants: selectable size / color with per-variant price & stock ----
+  const variantSizes = Array.from(
+    new Set([
+      ...((product.variants || []).map((v) => v.size).filter(Boolean)),
+      ...(product.sizes || []),
+    ])
+  );
+  const variantColors = Array.from(
+    new Set([
+      ...((product.variants || []).map((v) => v.color).filter(Boolean)),
+      ...(product.colors || []),
+    ])
+  );
+  const hasVariants = (product.variants || []).length > 0;
+  const matchedVariant = hasVariants
+    ? (product.variants || []).find(
+        (v) =>
+          (selectedSize ? v.size === selectedSize : !v.size) &&
+          (selectedColor ? v.color === selectedColor : !v.color)
+      )
+    : null;
+  const matchedVariantIndex = matchedVariant ? (product.variants || []).indexOf(matchedVariant) : -1;
+  const displayPrice = matchedVariant?.price ?? product.saleprice;
+  const displayStock = matchedVariant?.stock ?? (product.stock ?? product.quantity ?? 0);
+  const displaySku = matchedVariant?.sku || product.sku;
+  const discountPct =
+    product.mrp > displayPrice ? Math.round(((product.mrp - displayPrice) / product.mrp) * 100) : 0;
+  const inStock = displayStock > 0;
+  // ---- review summary ----
+  const totalReviews = product.reviewCount || reviews.length;
+  const avgRating =
+    product.rating ||
+    (reviews.length
+      ? reviews.reduce((acc, r) => acc + (Number(r.rating) || 0), 0) / reviews.length
+      : 0);
+  const ratingDist = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  reviews.forEach((r) => {
+    const star = Math.round(Number(r.rating) || 0);
+    if (ratingDist[star] !== undefined) ratingDist[star] += 1;
+  });
 
   return (
     <PageTransition className="space-y-10">
@@ -174,27 +217,125 @@ const ProductDetailsPage = () => {
                 {product.reviewCount || reviews.length} review{(product.reviewCount || reviews.length) === 1 ? "" : "s"}
               </span>
               <span className={inStock ? "text-emerald-600" : "text-rose-600"}>
-                {inStock ? `${product.stock ?? product.quantity} in stock` : "Out of stock"}
+                {inStock ? `${displayStock} in stock` : "Out of stock"}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            <p className="text-3xl font-bold text-slate-900 dark:text-white">${product.saleprice}</p>
-            {product.mrp > product.saleprice && (
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-3xl font-bold text-slate-900 dark:text-white">${displayPrice}</p>
+            {product.mrp > displayPrice && (
               <>
                 <p className="text-lg text-slate-400 line-through">${product.mrp}</p>
                 <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-bold text-emerald-700">
-                  {product.discountPercentage || 0}% off
+                  {discountPct}% off
                 </span>
               </>
             )}
+            {matchedVariant && (
+              <span className="rounded-full bg-primary-100 px-2 py-0.5 text-xs font-bold text-primary-700">
+                {[matchedVariant.size, matchedVariant.color].filter(Boolean).join(" / ")} variant
+              </span>
+            )}
           </div>
+          {hasVariants && !matchedVariant && (selectedSize || selectedColor) && (
+            <p className="text-xs text-slate-500">
+              This combination is not available — please try another size or color.
+            </p>
+          )}
           {(product.shortDescription || product.details) && (
             <p className="leading-7 text-slate-600 dark:text-slate-300">{product.shortDescription || product.details}</p>
           )}
-          {product.sizes?.length > 0 && <p className="text-sm"><b>Sizes:</b> {product.sizes.join(", ")}</p>}
-          {product.colors?.length > 0 && <p className="text-sm"><b>Colors:</b> {product.colors.join(", ")}</p>}
+          {variantSizes.length > 0 && (
+            <div>
+              <p className="text-sm font-semibold">
+                Size{" "}
+                {selectedSize && (
+                  <span className="font-normal text-slate-500">({selectedSize})</span>
+                )}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {variantSizes.map((size) => (
+                  <button
+                    key={size}
+                    onClick={() => setSelectedSize((prev) => (prev === size ? "" : size))}
+                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                      selectedSize === size
+                        ? "border-primary-600 bg-primary-600 text-white"
+                        : "border-slate-300 hover:border-primary-400 dark:border-slate-700"
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {variantColors.length > 0 && (
+            <div>
+              <p className="text-sm font-semibold">
+                Color{" "}
+                {selectedColor && (
+                  <span className="font-normal text-slate-500">({selectedColor})</span>
+                )}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {variantColors.map((color) => (
+                  <button
+                    key={color}
+                    onClick={() => setSelectedColor((prev) => (prev === color ? "" : color))}
+                    className={`rounded-xl border px-4 py-2 text-sm font-semibold transition ${
+                      selectedColor === color
+                        ? "border-primary-600 bg-primary-600 text-white"
+                        : "border-slate-300 hover:border-primary-400 dark:border-slate-700"
+                    }`}
+                  >
+                    {color}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {hasVariants && (
+            <div className="overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-700">
+              <p className="bg-slate-50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-500 dark:bg-slate-950/60">
+                Available variants (click a row to select)
+              </p>
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-slate-500">
+                    <th className="px-4 py-2">Size</th>
+                    <th className="px-4 py-2">Color</th>
+                    <th className="px-4 py-2">SKU</th>
+                    <th className="px-4 py-2">Price</th>
+                    <th className="px-4 py-2">Stock</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(product.variants || []).map((v, idx) => (
+                    <tr
+                      key={idx}
+                      onClick={() => {
+                        setSelectedSize(v.size || "");
+                        setSelectedColor(v.color || "");
+                      }}
+                      className={`cursor-pointer border-t border-slate-100 dark:border-slate-800 ${
+                        matchedVariantIndex === idx
+                          ? "bg-primary-50 dark:bg-primary-900/20"
+                          : "hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                      }`}
+                    >
+                      <td className="px-4 py-2">{v.size || "—"}</td>
+                      <td className="px-4 py-2">{v.color || "—"}</td>
+                      <td className="px-4 py-2">{v.sku || "—"}</td>
+                      <td className="px-4 py-2 font-semibold">${v.price ?? displayPrice}</td>
+                      <td className="px-4 py-2">{v.stock ?? 0}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
 
           <div className="grid gap-3 rounded-3xl border border-slate-200 bg-slate-50/80 p-4 dark:border-slate-700 dark:bg-slate-950/40 sm:grid-cols-3">
             <div>
@@ -207,7 +348,7 @@ const ProductDetailsPage = () => {
             </div>
             <div>
               <p className="text-xs uppercase tracking-wide text-slate-500 dark:text-slate-400">SKU</p>
-              <p className="mt-1 text-lg font-semibold">{product.sku || "—"}</p>
+              <p className="mt-1 text-lg font-semibold">{displaySku || "—"}</p>
             </div>
           </div>
 
@@ -217,7 +358,7 @@ const ProductDetailsPage = () => {
                 <Minus className="h-4 w-4" />
               </button>
               <span className="px-4 text-sm font-semibold">{quantity}</span>
-              <button onClick={() => setQuantity((prev) => Math.min(product.stock ?? 99, prev + 1))} className="p-3">
+              <button onClick={() => setQuantity((prev) => Math.min(displayStock || 99, prev + 1))} className="p-3">
                 <Plus className="h-4 w-4" />
               </button>
             </div>
@@ -244,6 +385,31 @@ const ProductDetailsPage = () => {
           className="rounded-[2rem] border border-slate-200/70 bg-white/85 p-6 dark:border-slate-700/60 dark:bg-slate-900/75"
         >
           <h2 className="text-2xl font-bold">Customer Reviews</h2>
+          <div className="mt-4 flex items-center gap-5 rounded-2xl bg-slate-50 p-4 dark:bg-slate-950/40">
+            <div className="text-center">
+              <p className="text-4xl font-bold">{avgRating.toFixed(1)}</p>
+              <div className="mt-1 flex justify-center gap-0.5 text-amber-500">
+                {[1, 2, 3, 4, 5].map((s) => (
+                  <Star key={s} className={`h-3.5 w-3.5 ${s <= Math.round(avgRating) ? "fill-current" : ""}`} />
+                ))}
+              </div>
+              <p className="mt-1 text-xs text-slate-500">{totalReviews} review{totalReviews === 1 ? "" : "s"}</p>
+            </div>
+            <div className="flex-1 space-y-1.5">
+              {[5, 4, 3, 2, 1].map((star) => (
+                <div key={star} className="flex items-center gap-2 text-xs">
+                  <span className="w-6 font-semibold">{star}★</span>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-800">
+                    <div
+                      className="h-full rounded-full bg-amber-400"
+                      style={{ width: `${totalReviews ? Math.round(((ratingDist[star] || 0) / totalReviews) * 100) : 0}%` }}
+                    />
+                  </div>
+                  <span className="w-6 text-right text-slate-500">{ratingDist[star] || 0}</span>
+                </div>
+              ))}
+            </div>
+          </div>
           <div className="mt-5 space-y-4">
             {reviews.length > 0 ? (
               reviews.map((review) => (
@@ -252,6 +418,11 @@ const ProductDetailsPage = () => {
                     <div>
                       <p className="font-semibold">{review.customer?.name || "Customer"}</p>
                       <p className="text-sm text-slate-500 dark:text-slate-400">Verified purchase</p>
+                      {review.createdAt && (
+                        <p className="text-xs text-slate-400">
+                          {new Date(review.createdAt).toLocaleDateString()}
+                        </p>
+                      )}
                     </div>
                     <span className="flex items-center gap-1 text-amber-500">
                       <Star className="h-4 w-4 fill-current" />
@@ -286,25 +457,50 @@ const ProductDetailsPage = () => {
           viewport={{ once: true, amount: 0.2 }}
           className="rounded-[2rem] border border-slate-200/70 bg-white/85 p-6 dark:border-slate-700/60 dark:bg-slate-900/75"
         >
-          <h2 className="text-2xl font-bold">Product Details</h2>
-          <div className="mt-5 space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
-            {product.description && <p>{product.description}</p>}
-            {product.details && product.details !== product.description && <p>{product.details}</p>}
-            {product.specifications && Object.keys(product.specifications).length > 0 && (
-              <ul className="mt-3 space-y-1">
-                {Object.entries(product.specifications).map(([k, v]) => (
-                  <li key={k}><b>{k}:</b> {String(v)}</li>
-                ))}
-              </ul>
-            )}
+          <h2 className="text-2xl font-bold">Full Information</h2>
+          {(product.shortDescription || product.details || product.description) && (
+            <p className="mt-3 text-sm leading-7 text-slate-600 dark:text-slate-300">
+              {product.shortDescription || product.details || product.description}
+            </p>
+          )}
+          <dl className="mt-5 overflow-hidden rounded-2xl border border-slate-200 text-sm dark:border-slate-700">
+            {[
+              ["Brand", product.brand?.name || "—"],
+              ["Category", product.category?.name || product.category || "—"],
+              ...(product.subcategory ? [["Subcategory", product.subcategory]] : []),
+              ["SKU", displaySku || "—"],
+              ["Vendor", product.vendor?.storeName || product.vendor?.name || "—"],
+              ["Availability", inStock ? `In stock (${displayStock} available)` : "Out of stock"],
+              ["Sold", `${product.sold || 0} units`],
+              ...Object.entries(product.specifications || {}).map(([k, v]) => [
+                k.charAt(0).toUpperCase() + k.slice(1),
+                String(v),
+              ]),
+            ].map(([label, value], idx) => (
+              <div
+                key={label}
+                className={`grid grid-cols-[140px_1fr] gap-3 px-4 py-2.5 ${
+                  idx % 2 ? "" : "bg-slate-50/80 dark:bg-slate-950/40"
+                }`}
+              >
+                <dt className="font-semibold text-slate-700 dark:text-slate-200">{label}</dt>
+                <dd className="text-slate-600 dark:text-slate-300">{value}</dd>
+              </div>
+            ))}
+          </dl>
+          {product.details && product.details !== product.shortDescription && product.details !== product.description && (
+            <div className="mt-5 space-y-2 text-sm leading-6 text-slate-600 dark:text-slate-300">
+              <h3 className="font-semibold text-slate-800 dark:text-slate-100">Details</h3>
+              <p>{product.details}</p>
+            </div>
+          )}
             {product.tags?.length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 {product.tags.map((t) => (
                   <span key={t} className="rounded-full bg-slate-100 px-2 py-0.5 text-xs dark:bg-slate-800">#{t}</span>
                 ))}
               </div>
             )}
-          </div>
         </motion.div>
       </section>
 
