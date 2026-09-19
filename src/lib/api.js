@@ -1,5 +1,10 @@
-export const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
-export const API_BASE = API_URL.replace(/\/api\/?$/, "");
+const RAW_API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000/api").replace(/\/+$/, "");
+// Backend mounts every route under /api (see backend/server.js: app.use("/api", ...)).
+// Accept both "https://host" and "https://host/api" so the env value never breaks call sites.
+export const API_URL = /\/api$/.test(RAW_API_URL) ? RAW_API_URL : `${RAW_API_URL}/api`;
+// Centralized alias — import { API_URI } from "../lib/api" instead of hardcoding URLs.
+export const API_URI = API_URL;
+export const API_BASE = API_URL.replace(/\/api$/, "");
 export const IMAGEKIT_URL_ENDPOINT = import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT || "";
 export const IMAGEKIT_PUBLIC_KEY = import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY || "";
 
