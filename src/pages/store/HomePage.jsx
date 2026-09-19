@@ -137,9 +137,9 @@ const HomePage = () => {
               No products found
             </p>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              Backend server start karo aur seed chalao taaki saare products yahan
-              dikhen: backend me <code>npm run seed</code>, phir frontend me products
-              automatically Home aur Shop dono par aa jayenge.
+              Abhi catalog khaali hai. Admin panel me login karke
+              Products → Add Product se naye products add karo — phir wo Home
+              aur Shop dono par automatically dikhenge.
             </p>
             <Link
               to="/shop"
