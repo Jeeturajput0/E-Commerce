@@ -10,17 +10,32 @@ const uploadRoutes = require("./routes/upload.routes");
 
 const app = express();
 
-const CLIENT_URLS = (process.env.CLIENT_URL || "http://localhost:5173")
+const DEFAULT_ALLOWED_ORIGINS = [
+  "https://e-commerce-nu-eight-79.vercel.app",
+  "http://localhost:5173",
+];
+
+const CLIENT_URLS = (
+  process.env.CLIENT_URL || DEFAULT_ALLOWED_ORIGINS.join(",")
+)
   .split(",")
   .map((s) => s.trim())
   .filter(Boolean);
 
+// CORS MUST be registered BEFORE express.json() and API routes.
+// `cors` middleware automatically handles preflight OPTIONS requests.
 app.use(
   cors({
-    origin: (origin, callback) => {
-      if (!origin || CLIENT_URLS.includes(origin)) return callback(null, true);
-      return callback(new Error("Not allowed by CORS"));
+    origin: function (origin, callback) {
+      if (!origin || CLIENT_URLS.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
     },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 app.use(express.json({ limit: "2mb" }));
