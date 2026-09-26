@@ -7,6 +7,7 @@ import PageTransition from "../../components/common/PageTransition";
 import ProductCard from "../../components/store/ProductCard";
 import { useApp } from "../../context/AppContext";
 import { resolveImage } from "../../lib/api";
+import { localProducts } from "../../data/products";
 import { productService, reviewService, wishlistService } from "../../services/api.services";
 
 const ProductDetailsPage = () => {
@@ -53,7 +54,38 @@ const ProductDetailsPage = () => {
           rating: p.rating || 0,
         })));
       })
-      .catch((e) => setError(e.message))
+      .catch(() => {
+        // Backend-free fallback — local catalog se product + related items dikhao
+        const local = localProducts.find((p) => String(p._id) === String(resolvedId));
+        if (!local) {
+          setError("Product not found");
+          return;
+        }
+        setProduct(local);
+        setActiveImage(0);
+        setSelectedSize("");
+        setSelectedColor("");
+        const localCat = local.category?.name || local.category;
+        setRelated(
+          localProducts
+            .filter(
+              (p) =>
+                String(p._id) !== String(resolvedId) &&
+                (p.category?.name || p.category) === localCat
+            )
+            .slice(0, 4)
+            .map((p) => ({
+              ...p,
+              id: p._id,
+              title: p.name,
+              price: p.saleprice,
+              stock: p.quantity ?? p.stock,
+              images: p.images?.length ? p.images.map((i) => (typeof i === "string" ? i : i.url)) : p.image ? [p.image] : [],
+              category: p.category?.name || p.category || "",
+              rating: p.rating || 0,
+            }))
+        );
+      })
       .finally(() => setLoading(false));
     reviewService
       .forProduct(resolvedId)

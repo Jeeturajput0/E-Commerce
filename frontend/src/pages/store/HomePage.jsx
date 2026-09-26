@@ -10,13 +10,13 @@ import {
   Truck,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Button from "../../components/common/Button";
 import Card from "../../components/common/Card";
 import PageTransition from "../../components/common/PageTransition";
 import ProductCard from "../../components/store/ProductCard";
 import { useApp } from "../../context/AppContext";
-import { productService } from "../../services/api.services";
+import { localProducts } from "../../data/products";
 import PromoSection from "../../features/store/components/PromoSection";
 import SliderHome from "./SliderHome";
 import CategoriesSection from "./CategoriesPage";
@@ -94,47 +94,29 @@ const stats = [
 
 const HomePage = () => {
   const { products: ctxProducts, categories, testimonials } = useApp();
-  // Live products directly from backend — taaki admin dashboard se
-  // add kiya hua product turant Home par dikhe (context refresh ka wait na karna pade)
-  const [liveProducts, setLiveProducts] = useState([]);
-  const [loadingProducts, setLoadingProducts] = useState(true);
+  // Backend-free catalog — products seedha local data se render hote hain,
+  // koi API call nahi. Context me (live backend se) products hon to wahi prefer honge.
+  const normalizeCard = (item) => ({
+    ...item,
+    id: item._id,
+    title: item.name,
+    price: item.saleprice,
+    stock: item.quantity ?? item.stock,
+    description: item.details || item.shortDescription || "",
+    images:
+      Array.isArray(item.images) && item.images.length
+        ? item.images.map((i) => (typeof i === "string" ? i : i.url))
+        : item.image
+          ? [item.image]
+          : [],
+    category: item.category?.name || item.category || "",
+    rating: item.rating || 0,
+  });
+  const [localCards] = useState(() => localProducts.map(normalizeCard));
+  const loadingProducts = false;
 
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      try {
-        const body = await productService.list({ limit: 20, sort: "newest" });
-        const list = body.data || body.items || [];
-        const normalized = list.map((item) => ({
-          ...item,
-          id: item._id,
-          title: item.name,
-          price: item.saleprice,
-          stock: item.quantity ?? item.stock,
-          description: item.details || item.shortDescription || "",
-          images:
-            Array.isArray(item.images) && item.images.length
-              ? item.images.map((i) => (typeof i === "string" ? i : i.url))
-              : item.image
-                ? [item.image]
-                : [],
-          category: item.category?.name || item.category || "",
-          rating: item.rating || 0,
-        }));
-        if (mounted) setLiveProducts(normalized);
-      } catch {
-        if (mounted) setLiveProducts([]);
-      } finally {
-        if (mounted) setLoadingProducts(false);
-      }
-    })();
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
-  // Backend live data prefer karo, khaali ho to context fallback
-  const products = liveProducts.length > 0 ? liveProducts : ctxProducts;
+  // Context (live) data prefer karo, na ho to local catalog
+  const products = ctxProducts.length > 0 ? ctxProducts : localCards;
   const featuredProducts = products.slice(0, 8);
   const electronicsProducts = products
     .filter((product) => product.category === "Electronics")
@@ -187,9 +169,8 @@ const HomePage = () => {
               No products found
             </p>
             <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-              Abhi catalog khaali hai. Admin panel me login karke
-              Products → Add Product se naye products add karo — phir wo Home
-              aur Shop dono par automatically dikhenge.
+              Abhi catalog khaali hai. Naye products jald aa rahe hain —
+              thodi der me phir check karo.
             </p>
             <Link
               to="/shop"

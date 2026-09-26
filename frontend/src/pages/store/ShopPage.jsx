@@ -7,7 +7,7 @@ import LoadingSkeleton from "../../components/common/LoadingSkeleton";
 import PageTransition from "../../components/common/PageTransition";
 import ProductCard from "../../components/store/ProductCard";
 import { useApp } from "../../context/AppContext";
-import { categoryService, productService } from "../../services/api.services";
+import { localProducts } from "../../data/products";
 import { slugifyCategory } from "../../features/store/utils/store";
 
 const PAGE_SIZE = 12;
@@ -31,7 +31,6 @@ const ShopPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [items, setItems] = useState([]);
   const [pagination, setPagination] = useState({ total: 0, page: 1, pages: 1 });
-  const [categoryId, setCategoryId] = useState("");
   const [sortBy, setSortBy] = useState(searchParams.get("sort") || "newest");
   const [maxPrice, setMaxPrice] = useState(searchParams.get("maxPrice") || "");
   const [search, setSearch] = useState(searchParams.get("q") || "");
@@ -43,49 +42,50 @@ const ShopPage = () => {
     ? categories.find((c) => slugifyCategory(c.name) === categorySlug)?.name || "All"
     : searchParams.get("category") || "All";
 
-  // Resolve category name -> id for backend filtering
-  useEffect(() => {
-    if (selectedCategory === "All") {
-      setCategoryId("");
-      return;
-    }
-    const found = categories.find((c) => c.name === selectedCategory);
-    if (found) {
-      setCategoryId(found._id || found.id);
-    } else {
-      // Fallback: fetch categories directly and match by slug
-      categoryService.list().then((list) => {
-        const match = (list.data || list).find((c) => slugifyCategory(c.name) === (categorySlug || slugifyCategory(selectedCategory)));
-        setCategoryId(match?._id || "");
-      }).catch(() => {});
-    }
-  }, [selectedCategory, categories, categorySlug]);
-
   const page = Number(searchParams.get("page")) || 1;
 
-  const fetchProducts = useCallback(async () => {
+  // Backend-free filtering over the local catalog (search, category, price, sort, paging)
+  const fetchProducts = useCallback(() => {
     setLoading(true);
     setError("");
     try {
-      const sortMap = { latest: "newest", newest: "newest", rating: "rating", popular: "popular", "price-asc": "price-asc", "price-desc": "price-desc" };
-      const body = await productService.list({
-        search: searchParams.get("q") || "",
-        category: categoryId || undefined,
-        sort: sortMap[searchParams.get("sort")] || "newest",
-        maxPrice: searchParams.get("maxPrice") || undefined,
-        page,
-        limit: PAGE_SIZE,
-      });
-      const list = body.data || body.items || [];
-      setItems(list.map(normalizeProduct));
-      setPagination(body.pagination || { total: list.length, page: 1, pages: 1 });
+      const q = (searchParams.get("q") || "").trim().toLowerCase();
+      const maxP = Number(searchParams.get("maxPrice")) || 0;
+      const sort = searchParams.get("sort") || "newest";
+      let list = [...localProducts];
+      if (selectedCategory !== "All") {
+        list = list.filter(
+          (p) => (p.category?.name || p.category || "") === selectedCategory
+        );
+      }
+      if (q) {
+        list = list.filter((p) =>
+          [p.name, p.shortDescription, p.details, (p.tags || []).join(" ")]
+            .join(" ")
+            .toLowerCase()
+            .includes(q)
+        );
+      }
+      if (maxP > 0) {
+        list = list.filter((p) => (p.saleprice ?? p.price ?? 0) <= maxP);
+      }
+      if (sort === "rating") list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      else if (sort === "popular") list.sort((a, b) => (b.sold || 0) - (a.sold || 0));
+      else if (sort === "price-asc") list.sort((a, b) => (a.saleprice ?? 0) - (b.saleprice ?? 0));
+      else if (sort === "price-desc") list.sort((a, b) => (b.saleprice ?? 0) - (a.saleprice ?? 0));
+      const total = list.length;
+      const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+      const safePage = Math.min(Math.max(page, 1), pages);
+      const slice = list.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
+      setItems(slice.map(normalizeProduct));
+      setPagination({ total, page: safePage, pages, hasNext: safePage < pages });
     } catch (e) {
       setError(e.message);
       setItems([]);
     } finally {
       setLoading(false);
     }
-  }, [searchParams, categoryId, page]);
+  }, [searchParams, selectedCategory, page]);
 
   useEffect(() => {
     setSearch(searchParams.get("q") || "");
@@ -146,7 +146,7 @@ const ShopPage = () => {
               {selectedCategory === "All" ? "Shop everything" : selectedCategory}
             </h1>
             <p className="mt-2 max-w-2xl text-sm text-slate-500 dark:text-slate-400">
-              Live catalog with server-side search, filters, and sorting.
+              Browse the collection with search, filters, and sorting.
             </p>
           </div>
           <button

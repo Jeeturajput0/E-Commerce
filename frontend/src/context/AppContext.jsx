@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { api } from "../lib/api";
+import { localCategories, localProducts } from "../data/products";
 
 const AppContext = createContext(null);
 
@@ -55,14 +56,30 @@ export const AppProvider = ({ children }) => {
       category: item.category?.name || "",
       rating: item.rating || 0,
     });
+    const loadLocalCatalog = () => {
+      setProducts(localProducts.map(normalizeProduct));
+      setCategories(
+        localCategories.map((item) => ({
+          ...item,
+          id: item._id,
+          count: localProducts.filter(
+            (p) => (p.category?.name || p.category) === item.name
+          ).length,
+        }))
+      );
+    };
     Promise.all([api("/products"), api("/categories")])
       .then(([productData, categoryData]) => {
         const products = productData.data || productData;
         const cats = categoryData.data || categoryData;
+        if (!products?.length && !cats?.length) {
+          loadLocalCatalog();
+          return;
+        }
         setProducts((products || []).map(normalizeProduct));
         setCategories(((cats || [])).map((item) => ({ ...item, id: item._id, count: item.productCount || 0 })));
       })
-      .catch(() => { setProducts([]); setCategories([]); });
+      .catch(() => { loadLocalCatalog(); });
   }, []);
 
   const currentUser = useMemo(() => {
