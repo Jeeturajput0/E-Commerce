@@ -11,7 +11,6 @@ const uploadRoutes = require("./routes/upload.routes");
 const app = express();
 
 const DEFAULT_ALLOWED_ORIGINS = [
-  "https://e-commerce-nu-eight-79.vercel.app",
   "http://localhost:5173",
 ];
 
@@ -19,23 +18,54 @@ const CLIENT_URLS = (
   process.env.CLIENT_URL || DEFAULT_ALLOWED_ORIGINS.join(",")
 )
   .split(",")
-  .map((s) => s.trim())
+  .map((s) => s.trim().replace(/\/$/, ""))
   .filter(Boolean);
+
+console.log("Allowed CORS origins:", CLIENT_URLS);
 
 // CORS MUST be registered BEFORE express.json() and API routes.
 // `cors` middleware automatically handles preflight OPTIONS requests.
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || CLIENT_URLS.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
+      const normalizedOrigin = origin
+        ? origin.replace(/\/$/, "")
+        : origin;
+
+      console.log("Incoming CORS origin:", normalizedOrigin);
+
+      if (!normalizedOrigin || CLIENT_URLS.includes(normalizedOrigin)) {
+        return callback(null, true);
       }
+
+      console.error(
+        "CORS blocked origin:",
+        normalizedOrigin,
+        "Allowed:",
+        CLIENT_URLS
+      );
+
+      return callback(new Error("Not allowed by CORS"));
     },
+
     credentials: false,
-    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Accept"],
+
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS"
+    ],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Accept"
+    ],
+
+    optionsSuccessStatus: 204
   })
 );
 app.use(express.json({ limit: "2mb" }));
